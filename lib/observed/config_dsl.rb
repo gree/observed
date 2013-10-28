@@ -1,3 +1,5 @@
+require 'observed/plugin'
+
 module Observed
   class ConfigDSL
 

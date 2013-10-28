@@ -42,8 +42,13 @@ module Observed
         end
       end
 
-      def run
-        result = config.map do |check_name, check_config|
+      def run(observation_name=nil)
+        configs = config.dup
+        if observation_name
+          configs.reject! { |name, c| name != observation_name }
+          fail "No configuration found for observation name '#{observation_name}'" if configs.empty?
+        end
+        result = configs.map do |check_name, check_config|
           plugin_name = check_config[:plugin] || fail(RuntimeError, %Q|Missing plugin name for the check "#{check_name}" in "#{check_config}" in "#{config}".|)
           plugin = plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{plugins}".|)
           updated_config = check_config.merge({:check_name => check_name})

@@ -1,0 +1,1 @@
+require 'observed/application/oneshot'
