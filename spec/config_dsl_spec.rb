@@ -8,8 +8,9 @@ describe Observed::ConfigDSL do
   it 'creates a config' do
     subject.instance_eval do
       observe 'foo', plugin: 'foo', name: 'name'
+      match 'foo', plugin: 'stdout'
     end
 
-    expect(subject.config).to eq({'foo' => {plugin: 'foo', name: 'name'}})
+    expect(subject.config).to eq({:inputs => {'foo' => {plugin: 'foo', name: 'name'}}, :outputs => {'foo' => {plugin: 'stdout'}}})
   end
 end

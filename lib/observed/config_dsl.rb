@@ -1,4 +1,4 @@
-require 'observed/plugin'
+require 'observed/input_plugin'
 
 module Observed
   class ConfigDSL
@@ -23,15 +23,23 @@ module Observed
     end
 
     def observe(observation_name, observation)
-      if observations[observation_name]
+      if inputs[observation_name]
         fail "An observation named '#{observation_name}' already exists."
       else
-        observations[observation_name] = observation
+        inputs[observation_name] = observation
+      end
+    end
+
+    def match(tag, output)
+      if outputs[tag]
+        fail "A `match` for the tag '#{tag}' already exists."
+      else
+        outputs[tag] = output
       end
     end
 
     def config
-      observations
+      { :inputs => inputs, :outputs => outputs }
     end
 
     def load!(file)
@@ -41,8 +49,12 @@ module Observed
 
     private
 
-    def observations
+    def inputs
       @observations ||= {}
+    end
+
+    def outputs
+      @outputs ||= {}
     end
 
     def plugins_directory

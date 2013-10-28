@@ -1,7 +1,7 @@
 require 'forwardable'
 
 module Observed
-  class Plugin
+  class InputPlugin
     class ObservationResults
 
       extend Forwardable

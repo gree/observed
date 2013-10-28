@@ -10,6 +10,6 @@ describe Observed::Application::Oneshot do
     )
   }
   it 'initializes' do
-    expect(subject.run.first.average_elapsed_time).not_to eq(0)
+    expect(subject.run.size).not_to eq(0)
   end
 end

@@ -33,7 +33,7 @@ describe Observed do
       end
 
       it 'should load observed.rb' do
-        expect(subject.size).to eq(1)
+        expect(subject.size).to eq(2)
       end
     end
   end
@@ -50,7 +50,7 @@ describe Observed do
     }
 
     it 'should load observed.rb' do
-      expect(subject.size).to eq(1)
+      expect(subject.size).to eq(2)
     end
 
   end

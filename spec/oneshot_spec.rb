@@ -3,11 +3,9 @@ require 'spec_helper'
 require 'observed/application/oneshot'
 
 module OneshotSpec
-  class BarPlugin < Observed::Plugin
-    default :timeout_in_milliseconds => 5000
-    default :number_of_trials => 10
+  class BarPlugin < Observed::InputPlugin
 
-    def run_health_check_once
+    def observe
       sleep rand
       "Bar"
     end
@@ -25,15 +23,22 @@ describe Observed::Application::Oneshot do
     }
     let(:config) {
       {
-          'test' => {
-              :plugin => 'bar',
-              :method => 'get',
-              :url => 'http://localhost:3000'
+          'inputs' => {
+            'test' => {
+                :plugin => 'bar',
+                :method => 'get',
+                :url => 'http://localhost:3000'
+            }
+          },
+          'outputs' => {
+            'test.*' => {
+                :plugin => 'stdout'
+            }
           }
       }
     }
     it 'initializes' do
-      expect(subject.run.first.average_elapsed_time).not_to eq(0)
+      expect(subject.run.size).not_to eq(0)
     end
   end
   context 'with configuration files' do
@@ -45,7 +50,7 @@ describe Observed::Application::Oneshot do
         )
       }
       it 'initializes' do
-        expect(subject.run.first.average_elapsed_time).not_to eq(0)
+        expect(subject.run.size).not_to eq(0)
       end
     end
     context 'with an incorrect plugins directory' do

@@ -1,16 +1,18 @@
 require "observed/http/version"
+require "observed/builtin_plugins"
 
 module Observed
   module Plugins
-    class HTTP < Observed::Plugin
+    class HTTP < Observed::InputPlugin
+
+      include Observed::BuiltinPlugins::Timer
 
       default :timeout_in_milliseconds => 5000
-      default :number_of_trials => 10
 
       attribute :method
       attribute :url
 
-      def run_health_check_once
+      def try
         logger.debug "method: #{method}, url: #{url}"
         require 'net/http'
         uri = URI.parse(url)
@@ -26,7 +28,7 @@ module Observed
           http.request(req)
         }.body
         logger.debug "Response body: #{body}"
-        "#{http_method} #{uri}"
+        { :status => 'success', :message => "#{http_method} #{uri}" }
       end
 
       def logger

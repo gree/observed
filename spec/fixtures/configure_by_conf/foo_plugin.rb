@@ -1,16 +1,10 @@
 module OneshotSpec
-  class FooPlugin < Observed::Plugin
-    default :timeout_in_milliseconds => 5000
-    default :number_of_trials => 10
+  class FooPlugin < Observed::InputPlugin
 
-    def run_health_check_once
+    def observe
       sleep_duration = rand / 20
       sleep sleep_duration
-      "Foo #{sleep_duration}"
-    end
-
-    def logger
-      Logger.new(STDOUT)
+      system.emit(tag, now, "Foo #{sleep_duration}")
     end
 
     def self.plugin_name

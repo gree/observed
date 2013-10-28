@@ -1,14 +1,14 @@
 require 'spec_helper'
-require 'observed/plugin'
+require 'observed/input_plugin'
 
-describe Observed::Plugin do
+describe Observed::InputPlugin do
 
   before {
     %w| Foo Bar Baz |.each do |class_name|
       if Object.const_defined? class_name
         Object.send(:remove_const, class_name)
       end
-      Observed::Plugin.instance_variable_set :@plugins, []
+      Observed::InputPlugin.instance_variable_set :@plugins, []
     end
   }
 
@@ -17,7 +17,10 @@ describe Observed::Plugin do
     it 'can be given by constructor parameters' do
       Object.const_set(
           'Foo',
-          Class.new(Observed::Plugin) do
+          Class.new(Observed::InputPlugin) do
+            attribute :timeout_in_milliseconds
+            attribute :number_of_trials
+            attribute :check_name
           end
       )
 
@@ -25,23 +28,26 @@ describe Observed::Plugin do
           :timeout_in_milliseconds => 5000,
           :number_of_trials => 5000,
           :check_name => 'check_name',
-          :name => 'name'
+          :tag => 'tag'
       )
 
       expect(subject.timeout_in_milliseconds).to eq(5000)
       expect(subject.number_of_trials).to eq(5000)
       expect(subject.check_name).to eq('check_name')
-      expect(subject.name).to eq('name')
+      expect(subject.tag).to eq('tag')
     end
 
     it 'can have a default value' do
       Object.const_set(
           'Foo',
-          Class.new(Observed::Plugin) do
+          Class.new(Observed::InputPlugin) do
+            attribute :timeout_in_milliseconds
+            attribute :number_of_trials
+            attribute :check_name
             default :timeout_in_milliseconds => 5000
             default :number_of_trials => 5000
             default :check_name => 'check_name'
-            default :name => 'name'
+            default :tag => 'tag'
           end
       )
 
@@ -50,14 +56,17 @@ describe Observed::Plugin do
       expect(subject.timeout_in_milliseconds).to eq(5000)
       expect(subject.number_of_trials).to eq(5000)
       expect(subject.check_name).to eq('check_name')
-      expect(subject.name).to eq('name')
+      expect(subject.tag).to eq('tag')
     end
 
     context 'without a default value or a given value' do
       it 'raises errors when accessed' do
         Object.const_set(
             'Foo',
-            Class.new(Observed::Plugin) do
+            Class.new(Observed::InputPlugin) do
+              attribute :timeout_in_milliseconds
+              attribute :number_of_trials
+              attribute :check_name
             end
         )
 
@@ -66,7 +75,7 @@ describe Observed::Plugin do
         expect { subject.timeout_in_milliseconds }.to raise_error
         expect { subject.number_of_trials }.to raise_error
         expect { subject.check_name }.to raise_error
-        expect { subject.name }.to raise_error
+        expect { subject.tag }.to raise_error
       end
     end
 
@@ -76,7 +85,7 @@ describe Observed::Plugin do
 
     context 'with no plugins' do
       it 'returns an empty array' do
-        expect(Observed::Plugin.plugins.size).to eq(0)
+        expect(Observed::InputPlugin.plugins.size).to eq(0)
       end
     end
 
@@ -84,11 +93,15 @@ describe Observed::Plugin do
       before {
         Object.const_set(
           'Foo',
-          Class.new(Observed::Plugin) do
+          Class.new(Observed::InputPlugin) do
+            attribute :timeout_in_milliseconds
+            attribute :number_of_trials
+            attribute :check_name
+
             default :timeout_in_milliseconds => 5000
             default :number_of_trials => 2
 
-            def run_health_check_once
+            def sample
               time_to_sleep = rand
               sleep rand
               "Foo #{time_to_sleep}"
@@ -101,7 +114,7 @@ describe Observed::Plugin do
         )
       }
       it 'returns an array with single element' do
-        expect(Observed::Plugin.plugins).to eq([Foo])
+        expect(Observed::InputPlugin.plugins).to eq([Foo])
       end
     end
 
@@ -109,19 +122,19 @@ describe Observed::Plugin do
       before {
         Object.const_set(
           'Bar',
-          Class.new(Observed::Plugin) do
+          Class.new(Observed::InputPlugin) do
             ;
           end
         )
         Object.const_set(
           'Baz',
-          Class.new(Observed::Plugin) do
+          Class.new(Observed::InputPlugin) do
               ;
           end
         )
       }
       it 'returns an array containing the plugins' do
-        expect(Observed::Plugin.plugins).to eq([Bar, Baz])
+        expect(Observed::InputPlugin.plugins).to eq([Bar, Baz])
       end
     end
 

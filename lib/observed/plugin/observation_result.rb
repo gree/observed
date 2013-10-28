@@ -1,5 +1,5 @@
 module Observed
-  class Plugin
+  class InputPlugin
     class ObservationResult
 
       def initialize(args)
