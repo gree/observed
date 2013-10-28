@@ -1,17 +1,17 @@
 module Observed
   class ConfigDSL
 
-    def initialize(options)
+    alias original_require require
+
+    def initialize(options={})
+      configure(options)
+    end
+
+    def configure(options)
       if options[:plugins_directory]
         @plugins_directory = options[:plugins_directory]
       end
     end
-
-    def plugins_directory
-      @plugins_directory ||= Pathname.new('.')
-    end
-
-    alias original_require require
 
     def require(lib)
       $LOAD_PATH.push plugins_directory.to_s
@@ -28,12 +28,23 @@ module Observed
       end
     end
 
+    def config
+      observations
+    end
+
+    def load!(file)
+      code = File.read(file)
+      instance_eval code, file
+    end
+
+    private
+
     def observations
       @observations ||= {}
     end
 
-    def config
-      observations
+    def plugins_directory
+      @plugins_directory ||= Pathname.new('.')
     end
   end
 end
