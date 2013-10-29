@@ -24,6 +24,9 @@ module Observed
 
       end
 
+      # @param [String] tag
+      # @param [Time] time
+      # @param [String] data
       def emit(tag, time, data)
         md = data.match(elapsed_time_pattern)
         unless md
