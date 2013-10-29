@@ -2,21 +2,28 @@ require 'spec_helper'
 
 require 'observed/application/oneshot'
 
-module OneshotSpec
-  class BarPlugin < Observed::InputPlugin
-
-    def observe
-      sleep rand
-      "Bar"
-    end
-
-    def self.plugin_name
-      'bar'
-    end
-  end
-end
-
 describe Observed::Application::Oneshot do
+  before {
+    %w| BarPlugin |.each do |class_name|
+      if Object.const_defined? class_name
+        Object.send(:remove_const, class_name)
+      end
+      Observed::InputPlugin.instance_variable_set :@plugins, []
+      Object.const_set(
+          'BarPlugin',
+          Class.new(Observed::InputPlugin) do
+            def observe
+              sleep rand
+              'Bar'
+            end
+
+            def self.plugin_name
+              'bar'
+            end
+          end
+      )
+    end
+  }
   context 'with Hash objects' do
     subject {
       Observed::Application::Oneshot.create(:config => config)
