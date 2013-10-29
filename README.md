@@ -79,14 +79,26 @@ match /myservice\.http/, plugin: 'builtin_avg', tag: 'myservice.http.avg', time_
 match /myservice\.http\.avg/, plugin: 'stdout'
 ```
 
-Run:
+As you see, `observed.conf` is just a Ruby source to describe Observed's configuration.
+You can rely on Ruby's language features, gems, or etc.
+
+We have finished configuring Observed.
+
+Now, run:
 
 ```
 $ clockwork clockwork.rb
 ```
 
-Then you see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
+Then you will see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
 `http://localhost:3000`.
+
+The example described here is fairly simple and would looks useless itself, but refrain that Observed is just a
+framework.
+If you want to monitor performances or get statistics on performance on your service, you can redirect the results to
+Fluentd, Ganglia and take advantages of their rich features and plugins.
+We like not reinventing the wheel and it is encouraged to use Observed for just polling, transforming and emitting the
+result to other services, and do monitoring, watching, alerting things there.
 
 ## Contributing
 
