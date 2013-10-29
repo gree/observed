@@ -1,7 +1,5 @@
 require 'observed/pluggable'
 require 'observed/configurable'
-require 'observed/plugin/observation_result'
-require 'observed/plugin/observation_results'
 
 module Observed
 
