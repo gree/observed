@@ -11,6 +11,14 @@ There are known plugins for:
 - Polling HTTP-based services to detect failures and performance degradation
 - (More to come)
 
+Observed has has a very small code-base (only a few hundreds of lines) and it should not be too hard to understand the
+code and develop plugins.
+
+Observed's extensible design through plugins is inspired by other Ruby products like Fluentd,
+and having knowledge of other Ruby products may help understanding Observed.
+(But remember that Observed is yet a highly ambitioned and experimental framework. Observed's code has more space to
+improve than other great Ruby products.)
+
 Observed is intended to work on Ruby 1.9.3 but should work on Ruby 2.0+ too.
 
 ## Installation
