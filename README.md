@@ -108,6 +108,28 @@ Fluentd, Ganglia and take advantages of their rich features and plugins.
 We like not reinventing the wheel and it is encouraged to use Observed for just polling, transforming and emitting the
 result to other services, and do monitoring, watching, alerting things there.
 
+## Documentation
+
+Observed is documented with [YARD](https://github.com/lsegal/yard).
+The documentation is not currently hosted on any server and we have to build the document before reading it.
+To generate the document, install YARD:
+
+```
+$ gem install yard
+```
+
+And then run `yardoc` like:
+
+```
+$ yardoc 'lib/**/*.rb'
+```
+
+Open the document:
+
+```
+$ open doc/index.html
+```
+
 ## Contributing
 
 1. Fork it
