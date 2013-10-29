@@ -52,7 +52,7 @@ module Observed
     end
 
     def fail_for_not_configured_parameter(name)
-      fail NotConfiguredError.new("The parameter `#{name}` is not configured.")
+      fail NotConfiguredError.new("The parameter `#{name}` is not configured. attributes=#{@attributes}, defaults=#{self.class.defaults}")
     end
 
   end

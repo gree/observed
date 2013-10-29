@@ -23,3 +23,63 @@ if RUBY_VERSION =~ /^1.9/
   require 'simplecov'
   SimpleCov.start
 end
+
+module Observed
+  module SpecHelpers
+
+    class << self
+
+      def extended(example_group)
+        example_group.before do
+          input_plugins = Observed::InputPlugin.instance_variable_get(:@plugins) || []
+          output_plugins = Observed::OutputPlugin.instance_variable_get(:@plugins) || []
+          (input_plugins + output_plugins).each do |klass|
+            Observed::SpecHelpers.undefine_const(klass)
+          end
+          Observed::InputPlugin.instance_variable_set(:@plugins, [])
+          Observed::OutputPlugin.instance_variable_set(:@plugins, [])
+        end
+      end
+
+      def included(example_group)
+        example_group.extend self
+      end
+
+      def undefine_const(klass)
+        klass_name = klass.to_s
+        md = klass_name.match(/(.+)::([^:]+)/)
+        if md
+          Observed::SpecHelpers.logger.debug "Removing the const #{md[2]} in #{md[1]}"
+          enclosing_module_name, klass_name = md[1..2]
+          enclosing_module = eval enclosing_module_name
+        else
+          enclosing_module = Object
+        end
+        enclosing_module.send(:remove_const, klass_name.intern)
+      end
+
+      def logger
+        @logger ||= Logger.new(STDOUT)
+      end
+
+    end
+
+    def define_input_plugin(class_name, &block)
+      Object.const_set(
+        class_name,
+        Class.new(Observed::InputPlugin) do
+          instance_eval &block
+        end
+      )
+    end
+
+    def define_output_plugin(class_name, &block)
+      Object.const_set(
+        class_name,
+        Class.new(Observed::OutputPlugin) do
+          instance_eval &block
+        end
+      )
+    end
+  end
+end

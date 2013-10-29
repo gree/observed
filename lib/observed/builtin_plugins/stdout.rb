@@ -35,5 +35,6 @@ module Observed
       end
 
     end
+
   end
 end
