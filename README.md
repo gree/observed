@@ -29,53 +29,64 @@ Or install it yourself as:
 
 ## Usage
 
+Observed itself is just a framework and doesn't support any service by default.
+Now, just for example, let's assume that we want Observed to poll our HTTP-based webs service and report the result and
+show average response time.
+We start with installing some observed plugins:
+
     $ gem install observed
     $ gem install observed-clockwork
     $ gem install observed-http
 
-    With `clockwork.rb` like:
+In this case, we use observed-clockwork to trigger polls through [Clockwork](https://github.com/tomykaira/clockwork).
+observed-clockwork is a library intended to use in Clockwork's configuration
+file. Clockwork is a scheduler process made with Ruby, which is intended to replace cron.
+Note that we can just use cron which is supported via observed-cron plugin(or even without the plugin, it is breeze to use
+Observed with cron) but we proceed with Clockwork just for example.
 
-    ```ruby
-    require 'clockwork'
-    require 'observed/clockwork'
+With `clockwork.rb` like:
 
-    include Clockwork
+```ruby
+require 'clockwork'
+require 'observed/clockwork'
 
-    # Below two lines are specific to Observed's Clockwork support.
-    # Others lines are just standard `clockwork.rb`
-    include Observed::Clockwork
-    observed :config_file => 'observed.conf'
+include Clockwork
 
-    every(10.seconds, 'foo_1')
-    ```
+# Below two lines are specific to Observed's Clockwork support.
+# Others lines are just standard `clockwork.rb`
+include Observed::Clockwork
+observed :config_file => 'observed.conf'
 
-    With `observed.conf` like:
+every(10.seconds, 'foo_1')
+```
 
-    ```ruby
-    require 'observed/builtin_plugins'
-    require 'observed/http'
+With `observed.conf` like:
 
-    observe 'myservice.http', {
-      plugin: 'http'
-      method: 'get',
-      url: 'http://localhost:3000',
-      timeout_in_milliseconds: 1000
-    }
+```ruby
+require 'observed/builtin_plugins'
+require 'observed/http'
 
-    match /myservice\..+/, plugin: 'stdout'
+observe 'myservice.http', {
+  plugin: 'http'
+  method: 'get',
+  url: 'http://localhost:3000',
+  timeout_in_milliseconds: 1000
+}
 
-    match /myservice\.http/, plugin: 'builtin_avg', tag: 'myservice.http.avg', time_window: 60 * 1000
-    match /myservice\.http\.avg/, plugin: 'stdout'
-    ```
+match /myservice\..+/, plugin: 'stdout'
 
-    Run:
+match /myservice\.http/, plugin: 'builtin_avg', tag: 'myservice.http.avg', time_window: 60 * 1000
+match /myservice\.http\.avg/, plugin: 'stdout'
+```
 
-    ```
-    $ clockwork clockwork.rb
-    ```
+Run:
 
-    Then you see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
-    `http://localhost:3000`.
+```
+$ clockwork clockwork.rb
+```
+
+Then you see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
+`http://localhost:3000`.
 
 ## Contributing
 
