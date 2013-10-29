@@ -112,6 +112,7 @@ result to other services, and do monitoring, watching, alerting things there.
 
 Observed is documented with [YARD](https://github.com/lsegal/yard).
 The documentation is not currently hosted on any server and we have to build the document before reading it.
+
 To generate the document, install YARD:
 
 ```
