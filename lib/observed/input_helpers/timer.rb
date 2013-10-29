@@ -7,7 +7,7 @@ module Observed
         result = begin
           try
         rescue => e
-          { :status => :error, :message => e.message + "\n" + e.backtrace }
+          { :status => :error, :message => "#{e.message}\n#{e.backtrace}" }
         end
         after = Time.now
         elapsed_time = after - before
