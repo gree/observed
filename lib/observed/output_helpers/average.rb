@@ -56,7 +56,7 @@ module Observed
       private
 
       def logger
-        Logger.new(STDOUT)
+        @logger ||= Logger.new(STDOUT)
       end
 
       def histogram
