@@ -1,4 +1,4 @@
-Copyright (c) 2013 KUOKA Yusuke
+Copyright (c) 2013 GREE, Inc.
 
 MIT License
 
