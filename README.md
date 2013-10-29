@@ -1,6 +1,12 @@
 # Observed
 
-TODO: Write a gem description
+Observed is a framework for polling various applications/middlewares/services running locally or on remote servers like
+ones in your production environment.
+
+Observed polls services, optionally transforms the results, and then redirects the results to another services.
+Observed is open for extension which means that it is extensible via plugins to support add more services and transformations to support.
+
+Observed is intended to work on Ruby 1.9.3 but should work on Ruby 2.0+ too.
 
 ## Installation
 
