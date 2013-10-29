@@ -1,11 +1,11 @@
 require "observed/http/version"
-require "observed/builtin_plugins"
+require "observed/input_helpers/timer"
 
 module Observed
   module Plugins
     class HTTP < Observed::InputPlugin
 
-      include Observed::BuiltinPlugins::Timer
+      include Observed::InputHelpers::Timer
 
       default :timeout_in_milliseconds => 5000
 

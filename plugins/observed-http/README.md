@@ -16,6 +16,14 @@ Or install it yourself as:
 
     $ gem install observed-http
 
+## Test
+
+    $ gem build observed.gemspec
+    $ gem install observed
+    $ cd plugins/observed-http
+    $ bundle install
+    $ bundle exec rspec
+
 ## Usage
 
 TODO: Write usage instructions here
