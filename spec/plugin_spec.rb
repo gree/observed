@@ -20,20 +20,17 @@ describe Observed::InputPlugin do
           Class.new(Observed::InputPlugin) do
             attribute :timeout_in_milliseconds
             attribute :number_of_trials
-            attribute :check_name
           end
       )
 
       subject = Foo.new(
           timeout_in_milliseconds: 5000,
           number_of_trials: 5000,
-          check_name: 'check_name',
           tag: 'tag'
       )
 
       expect(subject.timeout_in_milliseconds).to eq(5000)
       expect(subject.number_of_trials).to eq(5000)
-      expect(subject.check_name).to eq('check_name')
       expect(subject.tag).to eq('tag')
     end
 
@@ -43,10 +40,8 @@ describe Observed::InputPlugin do
           Class.new(Observed::InputPlugin) do
             attribute :timeout_in_milliseconds
             attribute :number_of_trials
-            attribute :check_name
             default :timeout_in_milliseconds => 5000
             default :number_of_trials => 5000
-            default :check_name => 'check_name'
             default :tag => 'tag'
           end
       )
@@ -55,7 +50,6 @@ describe Observed::InputPlugin do
 
       expect(subject.timeout_in_milliseconds).to eq(5000)
       expect(subject.number_of_trials).to eq(5000)
-      expect(subject.check_name).to eq('check_name')
       expect(subject.tag).to eq('tag')
     end
 
@@ -66,7 +60,6 @@ describe Observed::InputPlugin do
             Class.new(Observed::InputPlugin) do
               attribute :timeout_in_milliseconds
               attribute :number_of_trials
-              attribute :check_name
             end
         )
 
@@ -74,7 +67,6 @@ describe Observed::InputPlugin do
 
         expect { subject.timeout_in_milliseconds }.to raise_error
         expect { subject.number_of_trials }.to raise_error
-        expect { subject.check_name }.to raise_error
         expect { subject.tag }.to raise_error
       end
     end
@@ -96,13 +88,12 @@ describe Observed::InputPlugin do
           Class.new(Observed::InputPlugin) do
             attribute :timeout_in_milliseconds
             attribute :number_of_trials
-            attribute :check_name
 
             default :timeout_in_milliseconds => 5000
             default :number_of_trials => 2
 
             def sample
-              time_to_sleep = rand
+              time_to_sleep = rand / 100
               sleep rand
               "Foo #{time_to_sleep}"
             end
