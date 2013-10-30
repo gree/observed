@@ -72,9 +72,9 @@ module Observed
         input_configs.each do |tag, input_config|
           plugin_name = input_config[:plugin] || fail(RuntimeError, %Q|Missing plugin name for the tag "#{tag}" in "#{input_config}" in "#{config}".|)
           plugin = input_plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{input_plugins}".|)
-          updated_config = input_config.merge({:tag => tag})
+          updated_config = input_config.merge(tag: tag)
           input = plugin.new(updated_config)
-          input.configure :system => self, :logger => logger
+          input.configure(system: self, logger: logger)
           inputs[tag] = input
         end
 
@@ -92,9 +92,9 @@ module Observed
         output_configs.each do |tag_pattern, output_config|
           plugin_name = output_config[:plugin] || fail(RuntimeError, %Q|Missing plugin name for the output for "#{tag_pattern}" in "#{output_config}" in #{config}.|)
           plugin = output_plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{output_plugins}".|)
-          updated_config = output_config.merge({:tag_pattern => Regexp.new(tag_pattern)})
+          updated_config = output_config.merge(tag_pattern: Regexp.new(tag_pattern))
           output = plugin.new(updated_config)
-          output.configure :system => self, :logger => logger
+          output.configure(system: self, logger: logger)
           outputs[tag_pattern] = output
         end
 

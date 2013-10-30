@@ -9,7 +9,7 @@ module Observed
 
       include Observed::InputHelpers::Timer
 
-      attribute :timeout_in_milliseconds, :default => 5000
+      attribute :timeout_in_milliseconds, default: 5000
 
       attribute :method
       attribute :url
@@ -42,10 +42,10 @@ module Observed
 
             logger.debug "Response body: #{body}"
 
-            { :status => 'success', :message => "#{http_method} #{uri}" }
+            { status: 'success', message: "#{http_method} #{uri}" }
           end
         rescue Timeout::Error => e
-          { :status => 'error', :message => e.message }
+          { status: 'error', message: e.message }
         end
       end
 

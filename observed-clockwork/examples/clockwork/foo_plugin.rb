@@ -1,7 +1,7 @@
 module OneshotSpec
   class FooPlugin < Observed::InputPlugin
-    default :timeout_in_milliseconds => 5000
-    default :number_of_trials => 10
+    default timeout_in_milliseconds: 5000
+    default number_of_trials: 10
 
     def observe
       sleep_duration = rand / 20

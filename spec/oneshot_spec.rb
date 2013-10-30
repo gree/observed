@@ -32,14 +32,14 @@ describe Observed::Application::Oneshot do
       {
           'inputs' => {
             'test' => {
-                :plugin => 'bar',
-                :method => 'get',
-                :url => 'http://localhost:3000'
+                plugin: 'bar',
+                method: 'get',
+                url: 'http://localhost:3000'
             }
           },
           'outputs' => {
             'test.*' => {
-                :plugin => 'stdout'
+                plugin: 'stdout'
             }
           }
       }
@@ -52,8 +52,8 @@ describe Observed::Application::Oneshot do
     context 'with the correct plugins directory' do
       subject {
         Observed::Application::Oneshot.create(
-            :config_file => 'spec/fixtures/configure_by_conf/observed.conf',
-            :plugins_directory => 'spec/fixtures/configure_by_conf'
+            config_file: 'spec/fixtures/configure_by_conf/observed.conf',
+            plugins_directory: 'spec/fixtures/configure_by_conf'
         )
       }
       it 'initializes' do
@@ -63,7 +63,7 @@ describe Observed::Application::Oneshot do
     context 'with an incorrect plugins directory' do
       subject {
         Observed::Application::Oneshot.create(
-            :config_file => 'spec/fixtures/configure_by_conf/observed.conf'
+            config_file: 'spec/fixtures/configure_by_conf/observed.conf'
         )
       }
       it 'raises an error on initialize' do

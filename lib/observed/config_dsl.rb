@@ -52,7 +52,7 @@ module Observed
     end
 
     def config
-      { :inputs => inputs, :outputs => outputs }
+      { inputs: inputs, outputs: outputs }
     end
 
     # Load the file and evalute the containing code in context of this object(a.k.a DSL).

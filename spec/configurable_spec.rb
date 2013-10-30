@@ -5,8 +5,8 @@ module ConfigurableSpec
   class Foo
     include Observed::Configurable
 
-    attribute :foo, :default => 123
-    attribute :bar, :default => 234
+    attribute :foo, default: 123
+    attribute :bar, default: 234
     attribute :baz
 
     default :bar => 345
@@ -32,7 +32,7 @@ describe Observed::Configurable do
 
   context 'with parameters for the constructor' do
     subject {
-      ConfigurableSpec::Foo.new({:foo => 1, :bar => 2, :baz => 3})
+      ConfigurableSpec::Foo.new({foo: 1, bar: 2, baz: 3})
     }
     it 'prefers values from constructor parameters over defaults' do
       expect(subject.foo).to eq(1)
@@ -44,7 +44,7 @@ describe Observed::Configurable do
   context 'configured through `configure(args)` method' do
     subject {
       foo = ConfigurableSpec::Foo.new
-      foo.configure({:foo => 1, :bar => 2, :baz => 3})
+      foo.configure({foo: 1, bar: 2, baz: 3})
       foo
     }
     it 'prefers values from `configure(args)` over defaults' do

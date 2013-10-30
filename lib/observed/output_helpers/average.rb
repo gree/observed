@@ -11,8 +11,8 @@ module Observed
 
         def included(klass)
           klass.instance_eval do
-            attribute :elapsed_time_pattern, :default => /(\d+) milliseconds/
-            attribute :format, :default => ->(avg) { "#{avg}"}
+            attribute :elapsed_time_pattern, default: /(\d+) milliseconds/
+            attribute :format, default: ->(avg) { "#{avg}"}
 
             # !@attribute [r] time_window
             #   @return [Float] The period within which data to calculate averages are collected

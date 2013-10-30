@@ -19,7 +19,7 @@ files = files.map do |file|
 end
 
 Observed::Clockwork::Handler.create_from_observed(
-  :config_file => ARGV[0]
+  config_file: ARGV[0]
 ).register!
 
 require files[1]

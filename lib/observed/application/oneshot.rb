@@ -40,7 +40,7 @@ module Observed
           config = if args[:yaml_file]
                      YAML.load_file(args[:yaml_file])
                    elsif args[:config_file]
-                     config_dsl = Observed::ConfigDSL.new(:plugins_directory => plugins_directory)
+                     config_dsl = Observed::ConfigDSL.new(plugins_directory: plugins_directory)
                      config_dsl.instance_eval(File.read(args[:config_file]), args[:config_file])
                      config_dsl.config
                    else

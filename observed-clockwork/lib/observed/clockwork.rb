@@ -39,7 +39,7 @@ module Observed
           Observed.load!(args[:config_file])
 
           config = Observed.config
-          app = Observed::Application::Oneshot.create(:config => config)
+          app = Observed::Application::Oneshot.create(config: config)
 
           self.new(app)
         end

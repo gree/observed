@@ -24,9 +24,9 @@ describe Observed do
         File.open('./observed.rb', 'w') do |file|
           file.write(
   <<-EOS
-  configure :plugins_directory => 'spec/fixtures/configure_by_conf'
+  configure plugins_directory: 'spec/fixtures/configure_by_conf'
 
-  observe 'foo', { plugin: 'foo' }
+  observe 'foo', plugin: 'foo'
   EOS
           )
         end

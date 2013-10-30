@@ -25,10 +25,10 @@ describe Observed::InputPlugin do
       )
 
       subject = Foo.new(
-          :timeout_in_milliseconds => 5000,
-          :number_of_trials => 5000,
-          :check_name => 'check_name',
-          :tag => 'tag'
+          timeout_in_milliseconds: 5000,
+          number_of_trials: 5000,
+          check_name: 'check_name',
+          tag: 'tag'
       )
 
       expect(subject.timeout_in_milliseconds).to eq(5000)

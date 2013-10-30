@@ -3,7 +3,7 @@ require 'observed/config_dsl'
 
 describe Observed::ConfigDSL do
   subject {
-    Observed::ConfigDSL.new(:plugins_directory => '.')
+    Observed::ConfigDSL.new(plugins_directory: '.')
   }
   it 'creates a config' do
     subject.instance_eval do
@@ -11,6 +11,6 @@ describe Observed::ConfigDSL do
       match 'foo', plugin: 'stdout'
     end
 
-    expect(subject.config).to eq({:inputs => {'foo' => {plugin: 'foo', name: 'name'}}, :outputs => {'foo' => {plugin: 'stdout'}}})
+    expect(subject.config).to eq({ inputs: {'foo' => {plugin: 'foo', name: 'name'}}, outputs: {'foo' => {plugin: 'stdout'}}})
   end
 end
