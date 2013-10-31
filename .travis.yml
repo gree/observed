@@ -1,0 +1,13 @@
+language: ruby
+rvm:
+  - 1.9.3
+  - jruby-19mode
+jdk:
+  - openjdk7
+  - oraclejdk7
+matrix:
+  exclude:
+    - rvm: 1.9.3
+      jdk: openjdk7
+    - rvm: 1.9.3
+      jdk: oraclejdk7
