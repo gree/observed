@@ -9,6 +9,7 @@ Observed is open for extension which means that it is extensible via plugins to 
 There are known plugins for:
 
 - Polling HTTP-based services to detect failures and performance degradation
+- Sending observed data to Fluentd
 - (More to come)
 
 Observed has has a very small code-base (only a few hundreds of lines) and it should not be too hard to understand the
@@ -101,12 +102,12 @@ $ clockwork clockwork.rb
 Then you will see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
 `http://localhost:3000`.
 
-The example described here is fairly simple and would looks useless itself, but refrain that Observed is just a
+The example described here is fairly simple and would look useless at glance, but refrain that Observed is just a
 framework.
 If you want to monitor performances or get statistics on performance on your service, you can redirect the results to
-Fluentd, Ganglia and take advantages of their rich features and plugins.
-We like not reinventing the wheel and it is encouraged to use Observed for just polling, transforming and emitting the
-result to other services, and do monitoring, watching, alerting things there.
+Fluentd, Ganglia or else and take advantages of their rich features and plugins.
+We like not reinventing the wheel and it is encouraged to use Observed for just to poll something and then emit the
+result to other services. Things like monitoring, watching, alerting can be done there.
 
 ## Documentation
 
