@@ -23,6 +23,10 @@ module Observed
     # mutating it globally.
     def require(lib)
       $LOAD_PATH.push plugins_directory.to_s
+      logger.debug {
+        indented_load_path = $LOAD_PATH.map { |l| "  #{l}" }.join("\n")
+        %Q|Requiring #{lib} while LOAD_PATH is:\n#{indented_load_path}|
+      }
       #original_require "#{plugins_directory + lib}"
       original_require lib
       $LOAD_PATH.delete plugins_directory.to_s
@@ -64,6 +68,10 @@ module Observed
     end
 
     private
+
+    def logger
+      @logger ||= Logger.new(STDOUT)
+    end
 
     def inputs
       @observations ||= {}
