@@ -1,0 +1,11 @@
+source 'https://rubygems.org'
+
+# Specify your gem's dependencies in observed-fluentd.gemspec
+gemspec
+
+gem 'clockwork', :group => :test
+gem 'fluentd', :group => :test
+gem 'cucumber', :group => :test
+gem 'aruba', :group => :test
+gem 'observed-http', :group => :test
+gem 'observed-clockwork', :group => :test
