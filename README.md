@@ -66,6 +66,10 @@ Or install it yourself as:
 
     $ gem install observed
 
+Or `git clone` the sources and install by using rake:
+
+    $ rake install
+
 ## Usage
 
 Observed itself is just a framework and doesn't support any service by default.

@@ -16,6 +16,10 @@ Or install it yourself as:
 
     $ gem install observed-fluentd
 
+Or `git clone` the sources and install by using rake:
+
+    $ rake install
+
 ## Usage
 
 First of all, we need to install the fluentd to which we send observed data:
