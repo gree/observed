@@ -1,10 +1,20 @@
 # Observed
 
+A polling framework
+
 Observed is a framework for polling various applications/middlewares/services running locally or on remote servers like
 ones in your production environment.
 
 Observed polls services, optionally transforms the results, and then redirects the results to another services.
 Observed is open for extension which means that it is extensible via plugins to support add more services and transformations.
+
+To be clear, you can use Observed to:
+
+(1) poll something,
+(2) optionally transform the result,
+(3) pass the result to another services or trigger something
+
+All the three things mentioned above can be extended via plugins and configured via configuration files.
 
 There are known plugins for:
 
@@ -21,6 +31,18 @@ and having knowledge of other Ruby products may help understanding Observed.
 improve than other great Ruby products.)
 
 Observed is intended to work on Ruby 1.9.3 but should work on Ruby 2.0+ too.
+
+## What it is not
+
+Observed is:
+
+- Not a monitoring and reporting tool like Ganglia, New Relic, or etc.
+  But Observed can be used to gather simple metrics via its plugins, and it can pass those metrics to an another tool to
+  achieve any serious monitoring or reporting.
+- Not a log collector like Fluentd.
+  Observed can be used to emit event logs to the log collector of your choice, but it does not replace or act like that.
+- Not a job scheduler like cron, though it can be integrated to those schedulers to make them trigger Observed to do the
+  job.
 
 ## Installation
 
