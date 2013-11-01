@@ -110,7 +110,7 @@ require 'observed/builtin_plugins'
 require 'observed/http'
 
 observe 'myservice.http', {
-  plugin: 'http'
+  plugin: 'http',
   method: 'get',
   url: 'http://localhost:3000',
   timeout_in_milliseconds: 1000
