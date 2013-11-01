@@ -102,7 +102,7 @@ $ clockwork clockwork.rb
 Then you will see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
 `http://localhost:3000`.
 
-The example described here is fairly simple and would look useless at glance, but refrain that Observed is just a
+The example described here is fairly simple and would look useless at a glance, but remember that Observed is just a
 framework.
 If you want to monitor performances or get statistics on performance on your service, you can redirect the results to
 Fluentd, Ganglia or else and take advantages of their rich features and plugins.
