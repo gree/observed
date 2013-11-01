@@ -49,7 +49,7 @@ Feature: Receives Observed's input and send it to Fluentd
 
     observed :config_file => 'tmp/aruba/observed.conf'
 
-    every(10.seconds, 'myservice')
+    every(1.seconds, 'myservice')
     """
     When I run `pwd`
     When I start my daemon with "fluentd -c tmp/aruba/fluent.conf"
@@ -59,5 +59,5 @@ Feature: Receives Observed's input and send it to Fluentd
     When I run `cat fluent.out.foo_0.log`
     Then the output should contain:
     """
-    milliseconds
+    elapsed_time
     """

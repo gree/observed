@@ -75,9 +75,16 @@ Run clockwork and trigger observed:
 
 Find data sent from Observed in the Fluentd output:
 
-    2013-10-31 15:00:31 +0900 debug.myservice: {"data":"Get http://localhost/ finished in 0.06448 milliseconds."}
-    2013-10-31 15:00:41 +0900 debug.myservice: {"data":"Get http://localhost/ finished in 0.01228 milliseconds."}
-    2013-10-31 15:00:51 +0900 debug.myservice: {"data":"Get http://localhost/ finished in 0.014614 milliseconds."}
+    2013-11-01T07:55:09Z	debug.myservice	{"status":"success","result":"Get http://localhost/","elapsed_time":0.013686}
+
+Now you can do anything utilizing Fluent's rich features and plugins.
+
+## Developping
+
+To run cucumber tests, execute:
+
+   $ bundle install --binstubs
+   $ bin/cucumber features
 
 ## Contributing
 

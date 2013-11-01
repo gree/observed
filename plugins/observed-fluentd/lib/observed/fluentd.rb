@@ -8,7 +8,7 @@ module Observed
       attribute :tag
       attribute :host
       attribute :port, default: 24224
-      attribute :transform, default: ->(data){ {data: data} }
+      attribute :transform, default: ->(data){ data }
 
       def emit(tag, time, data)
         fluent_logger.post(self.tag, transform.call(data))

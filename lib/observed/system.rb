@@ -12,7 +12,11 @@ module Observed
       @config
     end
 
-    def emit(tag, time, data)
+    def emit(tag, time, data=nil)
+      if data.nil?
+        data = time
+        time = self.now
+      end
       outputs.each do |tag_pattern, output|
         if output.match(tag)
           output.emit(tag, time, data)
@@ -34,6 +38,10 @@ module Observed
         input.observe
       end
 
+    end
+
+    def now
+      Time.now
     end
 
     def logger

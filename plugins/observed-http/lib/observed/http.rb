@@ -14,11 +14,13 @@ module Observed
       attribute :method
       attribute :url
 
-      def try
+      def observe
         logger.debug "method: #{method}, url: #{url}"
 
         uri = URI.parse(url)
+
         logger.debug "uri: #{uri}, uri.host: #{uri.host}, uri.port:#{uri.port}, uri.path: #{uri.path}"
+
         http_method = method.capitalize
         path = if uri.path.size == 0
                  '/'
@@ -32,21 +34,19 @@ module Observed
           fail "Invalid configuration on timeout: `timeout` must be a number but it was not(=#{timeout_in_seconds})"
         end
 
-        begin
-          Timeout::timeout(timeout_in_seconds) do
-            logger.debug "Sending a HTTP request with the timeout of #{timeout_in_seconds} seconds"
+        time_and_emit(tag: self.tag, timeout_in_seconds: timeout_in_seconds) do
 
-            body = Net::HTTP.start(uri.host, uri.port) {|http|
-              http.request(req)
-            }.body
+          logger.debug "Sending a HTTP request with the timeout of #{timeout_in_seconds} seconds"
 
-            logger.debug "Response body: #{body}"
+          body = Net::HTTP.start(uri.host, uri.port) {|http|
+            http.request(req)
+          }.body
 
-            { status: 'success', message: "#{http_method} #{uri}" }
-          end
-        rescue Timeout::Error => e
-          { status: 'error', message: e.message }
+          logger.debug "Response body: #{body}"
+
+          "#{http_method} #{uri}"
         end
+
       end
 
       def logger

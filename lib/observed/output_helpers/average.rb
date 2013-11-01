@@ -7,12 +7,16 @@ module Observed
 
       include Observed::Configurable
 
+      UNDEFINED = Object.new
+
       class << self
 
         def included(klass)
           klass.instance_eval do
             attribute :elapsed_time_pattern, default: /(\d+) milliseconds/
-            attribute :format, default: ->(avg) { "#{avg}"}
+            attribute :format, default: ->(avg) { avg }
+            attribute :input_key
+            attribute :output_key, default: UNDEFINED
 
             # !@attribute [r] time_window
             #   @return [Float] The period within which data to calculate averages are collected
@@ -28,7 +32,14 @@ module Observed
       # @param [Time] time
       # @param [String] data
       def emit(tag, time, data)
-        md = data.match(elapsed_time_pattern)
+        output_key = if self.output_key == UNDEFINED
+                       input_key
+                     else
+                       self.output_key
+                     end
+
+        input = data[input_key]
+        md = input.match(elapsed_time_pattern)
         unless md
           logger.debug "Encountered not-matching data: #{data} for the tag '#{tag}'"
         end
@@ -47,7 +58,7 @@ module Observed
           sum = portion.values.inject(0.0) { |sum, t| sum + t }
           avg = sum / portion.size
           logger.debug "Emitting #{avg}"
-          system.emit(self.tag, now, format.call(avg))
+          system.emit(self.tag, { output_key => format.call(avg) })
         else
           logger.debug "Skipping emit since no data exist within the period from #{now - time_window} until #{now}."
         end

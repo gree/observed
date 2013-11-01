@@ -32,12 +32,19 @@ module Observed
       def extended(example_group)
         example_group.before do
           input_plugins = Observed::InputPlugin.instance_variable_get(:@plugins) || []
-          output_plugins = Observed::OutputPlugin.instance_variable_get(:@plugins) || []
+          output_plugins = if Object.const_defined?(:Observed) && Observed.const_defined?(:OutputPlugin)
+                             Observed::OutputPlugin.instance_variable_get(:@plugins) || []
+                           else
+                             []
+                           end
           (input_plugins + output_plugins).each do |klass|
             Observed::SpecHelpers.undefine_const(klass)
           end
           Observed::InputPlugin.instance_variable_set(:@plugins, [])
-          Observed::OutputPlugin.instance_variable_set(:@plugins, [])
+
+          if Object.const_defined?(:Observed) && Observed.const_defined?(:OutputPlugin)
+            Observed::OutputPlugin.instance_variable_set(:@plugins, [])
+          end
         end
       end
 
