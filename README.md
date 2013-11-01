@@ -100,7 +100,7 @@ include Clockwork
 include Observed::Clockwork
 observed :config_file => 'observed.conf'
 
-every(10.seconds, 'foo_1')
+every(10.seconds, 'myservice.http')
 ```
 
 With `observed.conf` like:
