@@ -36,12 +36,13 @@ Observed is intended to work on Ruby 1.9.3 but should work on Ruby 2.0+ too.
 
 Observed is:
 
+- Not a framework for creating Web-based polls which are voted. It's all about [polling (computer science)](http://en.wikipedia.org/wiki/Polling_(computer_science))
 - Not a monitoring and reporting tool like Ganglia, New Relic, or etc.
   But Observed can be used to gather simple metrics via its plugins, and it can pass those metrics to an another tool to
   achieve any serious monitoring or reporting.
 - Not a log collector like Fluentd.
   Observed can be used to emit event logs to the log collector of your choice, but it does not replace or act like that.
-- Not a job scheduler like cron, though it can be integrated to those schedulers to make them trigger Observed to do the
+- Not a [job scheduler](http://en.wikipedia.org/wiki/Job_scheduler) like cron, though it can be integrated to those schedulers to make them trigger Observed to do the
   job.
 
 ## Installation
