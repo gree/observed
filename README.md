@@ -45,6 +45,13 @@ Observed is:
 -  Not a [job scheduler](http://en.wikipedia.org/wiki/Job_scheduler) like cron, though it can be integrated to those schedulers to make them trigger Observed to do the
    job.
 
+## Similar products
+
+- [vacuumetrix](https://github.com/99designs/vacuumetrix) gets metrics from various sources and puts those to various
+  outputs like Graphite, Ganglia, etc.
+  On the other hand, Observed scope itself to be used just for `polling` and also it outputs to not only monitoring
+  systems but any system.
+
 ## Installation
 
 Add this line to your application's Gemfile:
