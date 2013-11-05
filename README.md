@@ -30,6 +30,10 @@ and having knowledge of other Ruby products may help understanding Observed.
 (But remember that Observed is yet a highly ambitioned and experimental framework. Observed's code has more space to
 improve than other great Ruby products.)
 
+Observed is (and its plugins should be) stateless.
+Specially for Observed, this means that it should work similarly when it is ran as a daemon or a _oneshot_ application like
+a regular cron job as states are stored somewhere outside of the application instance.
+
 Observed is intended to work on Ruby 1.9.3 but should work on Ruby 2.0+ too.
 
 ## What it is not
