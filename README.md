@@ -4,6 +4,9 @@ A polling framework
 
 Observed is a framework for polling various applications/middlewares/services running locally or on remote servers like
 ones in your production environment.
+It is designed with extensibility in mind.
+
+-----
 
 Observed polls services, optionally transforms the results, and then redirects the results to another services.
 Observed is open for extension which means that it is extensible via plugins to support add more services and transformations.
@@ -55,6 +58,10 @@ Observed is:
   outputs like Graphite, Ganglia, etc.
   On the other hand, Observed scope itself to be used just for `polling` and also it outputs to not only monitoring
   systems but any system.
+- [metrics-sampler](https://github.com/dimovelev/metrics-sampler) is a java program which queries metrics from various
+  sources and sends them to outputs like the console or Graphite. It supports inputs such as JMX, JDBC, apache-status,
+  Oracle NoSQL, Redis, webmethods, or regular process which is runnable via the command-line and is able to communiate
+  via standard input/output.
 
 ## Installation
 
