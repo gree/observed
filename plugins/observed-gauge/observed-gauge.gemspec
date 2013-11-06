@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Observed::Gauge::VERSION
   spec.authors       = ['KUOKA Yusuke']
   spec.email         = ['yusuke.kuoka@gree.net']
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Gauge plugin for Observed}
+  spec.summary       = %q{A plugin to consolidate outputs from other Observed output plugins by averaging values by averaging them over configured periods}
   spec.homepage      = ''
   spec.license       = 'MIT'
 
