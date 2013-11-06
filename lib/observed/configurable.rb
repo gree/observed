@@ -11,6 +11,7 @@ module Observed
       else
         @attributes ||= args.dup
       end
+      self
     end
 
     module ClassMethods
