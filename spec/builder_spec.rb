@@ -114,13 +114,13 @@ module Observed
       to = args[:to]
       with = args[:with]
       writers << writer = case to
-                 when String
-                   writer_plugins[to].new(with)
-                 when Observed::Writer
-                   to
-                 else
-                   fail "Unexpected type of value for the key :to in: #{args}"
-                 end
+                          when String
+                            writer_plugins[to].new(with)
+                          when Observed::Writer
+                            to
+                          else
+                            fail "Unexpected type of value for the key :to in: #{args}"
+                          end
       writer
     end
 
@@ -128,13 +128,13 @@ module Observed
       from = args[:from]
       with = args[:with]
       readers << reader = case from
-                 when String
-                   reader_plugins[from].new(with)
-                 when Observed::Reader
-                   from
-                 else
-                   fail "Unexpected type of value for the key :from in: #{args}"
-                 end
+                          when String
+                            reader_plugins[from].new(with)
+                          when Observed::Reader
+                            from
+                          else
+                            fail "Unexpected type of value for the key :from in: #{args}"
+                          end
       reader
     end
 
