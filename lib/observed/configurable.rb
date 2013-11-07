@@ -15,7 +15,7 @@ module Observed
     end
 
     module ClassMethods
-      # @param [Symbol] name
+      # @param [String|Symbol] name
       def attribute(name, options={})
         define_method(name) do
           instance_variable_get("@#{name.to_s}") || @attributes[name] || self.class.defaults[name] || fail_for_not_configured_parameter(name)
