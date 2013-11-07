@@ -27,14 +27,15 @@ describe Observed do
   $LOAD_PATH << 'spec/fixtures/configure_by_conf'
   require 'foo_plugin'
 
-  observe 'foo', plugin: 'foo'
+  observe 'foo', via: 'foo'
   EOS
           )
         end
       end
 
       it 'should load observed.rb' do
-        expect(subject.size).to eq(2)
+        expect(subject.reporters.size).to eq(0)
+        expect(subject.observers.size).to eq(1)
       end
     end
   end
@@ -52,7 +53,8 @@ describe Observed do
     }
 
     it 'should load observed.rb' do
-      expect(subject.size).to eq(2)
+      expect(subject.reporters.size).to eq(0)
+      expect(subject.observers.size).to eq(1)
     end
 
   end

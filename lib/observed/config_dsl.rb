@@ -1,59 +1,63 @@
 require 'observed/observer'
+require 'observed/configurable'
+require 'forwardable'
 
 module Observed
   # The DSL to describe Observed's configuration.
   # @example
-  # ConfigDSL.new.instance_eval user_code_from_configuration_file
+  # context = ConfigDSL.new(builder: the_builder)
+  # context.eval_file observed_conf_file(a.k.a user code describes Observed configuration)
+  # context.config #=> can be used to instantiate Observed::System
   class ConfigDSL
 
-    def initialize
+    extend Forwardable
+
+    include Observed::Configurable
+
+    def_delegators :@builder, :observe, :report, :read, :write
+
+    attribute :builder
+
+    def initialize(args)
+      args[:builder] || fail("The key :builder must exist in #{args}")
+      @builder = args[:builder]
+
+      configure(args)
     end
 
     def eval_file(file)
       @file = File.expand_path(file)
       working_directory File.dirname(@file)
-      instance_eval(File.read(file), @file)
+      code = File.read(file)
+      logger.debug "Evaluating: #{code}"
+      instance_eval(code, @file)
     end
 
+    # The `current directory` in which `require_relative` finds source files
     def working_directory(wd=nil)
       @working_directory = wd if wd
       @working_directory
     end
 
+    # The replacement for Ruby's built-in `require_relative`.
+    # Although the built-in one can not be used in `eval` or `instance_eval` or etc because
+    # there is no `current file` semantics in `eval`, this replacement takes the file which is going to be evaluated
+    # as the `current file`.
+    # Thanks to this method, we can use `require_relative` in observed.conf files both when it is evaluated with `eval`
+    # and when it is evaluated in result of `require`.
     def require_relative(lib)
       path = File.expand_path("#{working_directory}/#{lib}")
       logger.debug "Require '#{path}'"
       require path
     end
 
-    # @param [String] tag The tag which is assigned to data which is generated from this input and is sent to output
-    # later
-    # @param [Hash] input The configuration for each input conatining (1) which input plugin to use for this input and
-    # (2) which parameters to pass to input plugin.
-    def observe(tag, input)
-      if inputs[tag]
-        fail "An observation named '#{tag}' already exists."
-      else
-        inputs[tag] = input
-      end
-    end
-
-    # @param [Regexp] tag The pattern to match inputs' tags
-    # @param [Hash] output The configuration for each output containing (1) which output plugin to use for this output
-    # and (2) which parameters to pass to the output plugin
-    def match(tag, output)
-      if outputs[tag]
-        fail "A `match` for the tag '#{tag}' already exists."
-      else
-        outputs[tag] = output
-      end
-    end
-
+    # Build and returns the Observed configuration
+    # @return [Observed::Config]
     def config
-      { observers: inputs, reporters: outputs }
+      @builder.build
     end
 
-    # Load the file and evalute the containing code in context of this object(a.k.a DSL).
+    # Load the file and evaluate the containing code in context of this object(a.k.a DSL).
     # @param [String|Pathname] file The path to Ruby script containing the code in Observed's configuration DSL,
     # typically `observed.conf`.
     def load!(file)

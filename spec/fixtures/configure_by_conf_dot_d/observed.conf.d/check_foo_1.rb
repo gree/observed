@@ -1,1 +1,1 @@
-observe 'foo_1', plugin: 'foo'
+observe 'foo_1', via: 'foo'

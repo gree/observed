@@ -6,16 +6,12 @@ describe Observed::Builder do
   include FakeFS::SpecHelpers
 
   subject {
-    Observed::Builder.new
-  }
-
-  before {
-    subject.configure(
-      writer_plugins: writer_plugins,
-      reader_plugins: reader_plugins,
-      observer_plugins: observer_plugins,
-      reporter_plugins: reporter_plugins,
-      system: system
+    Observed::Builder.new(
+        writer_plugins: writer_plugins,
+        reader_plugins: reader_plugins,
+        observer_plugins: observer_plugins,
+        reporter_plugins: reporter_plugins,
+        system: system
     )
   }
 

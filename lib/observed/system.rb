@@ -4,7 +4,11 @@ require 'observed/reporter'
 module Observed
   class System
 
-    def initialize(config)
+    def initialize(config=nil)
+      @config = config if config
+    end
+
+    def config=(config)
       @config = config
     end
 
@@ -17,7 +21,7 @@ module Observed
         data = time
         time = self.now
       end
-      reporters.each do |tag_pattern, reporter|
+      reporters.each do |reporter|
         if reporter.match(tag)
           reporter.report(tag, time, data)
         end
@@ -33,8 +37,7 @@ module Observed
         observers_to_run = observers
       end
 
-      observers_to_run.map do |tag, input|
-        logger.debug "Observe: #{tag}"
+      observers_to_run.map do |input|
         input.observe
       end
 
@@ -50,27 +53,19 @@ module Observed
 
     private
 
-    def observer_plugins
-      @plugins ||= begin
-        plugins = {}
-        Observed::Observer.select_named_plugins.each do |plugin|
-          plugins[plugin.plugin_name] = plugin
-        end
-        plugins
-      end
-    end
-
-    def reporter_plugins
-      @reporter_plugins ||= begin
-        plugins = {}
-        Observed::Reporter.select_named_plugins.each do |plugin|
-          plugins[plugin.plugin_name] = plugin
-        end
-        plugins
-      end
-    end
-
     def observers
+      config.observers
+    end
+
+    def reporters
+      config.reporters
+    end
+
+  end
+
+  class YAML
+    def observers
+      config.observers
       @observers ||= begin
 
         observer_configs = config.observers
@@ -109,6 +104,5 @@ module Observed
         reporters
       end
     end
-
   end
 end

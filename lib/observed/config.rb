@@ -1,27 +1,27 @@
+require 'observed/configurable'
+
 module Observed
+  # The configuration for Observed which may be built by Observed::Builder,
+  # which may contains configured writers, readers, reporters, observers.
   class Config
-    # @option args [Array] inputs
-    # @option args [Array] outputs
-    def initialize(args)
-      @observers = args[:observers] || args['observers'] || fail("Missing observers in #{args}")
-      @reporters = args[:reporters] || args['reporters'] || fail("Missing reporters in #{args}")
-    end
 
-    def observers
-      @observers
-    end
+    include Observed::Configurable
 
-    def reporters
-      @reporters
-    end
+    # !@attribute [rw] writers
+    #  @return [Array<Observed::Writer>]
+    attribute :writers
 
-    class << self
+    # !@attribute [rw] readers
+    #  @return [Array<Observed::Reader>]
+    attribute :readers
 
-      def create(args)
-        self.new(args)
-      end
+    # !@attribute [rw] reporters
+    #  @return [Array<Observed::Reporter>]
+    attribute :reporters
 
-    end
+    # !@attribute [rw] observers
+    #  @return [Array<Observed::Observer>]
+    attribute :observers
 
   end
 end
