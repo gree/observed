@@ -32,8 +32,6 @@ module Observed
       class << self
 
         def create(args)
-          args[:plugins_directory] ||= '.'
-
           Observed.init!
           Observed.configure args
           Observed.load!(args[:config_file])

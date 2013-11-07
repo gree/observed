@@ -1,1 +1,1 @@
-require 'foo_plugin'
+require_relative '../foo_plugin'

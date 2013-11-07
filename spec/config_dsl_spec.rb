@@ -3,7 +3,7 @@ require 'observed/config_dsl'
 
 describe Observed::ConfigDSL do
   subject {
-    Observed::ConfigDSL.new(plugins_directory: '.')
+    Observed::ConfigDSL.new
   }
   it 'creates a config' do
     subject.instance_eval do

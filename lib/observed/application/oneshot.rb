@@ -32,16 +32,12 @@ module Observed
         # @param [Hash<Symbol,String>] args
         # @option args [Array<String>] :argv The Ruby's `ARGV` like object which is treated as intialization parameters for Oneshoft application.
         def create(args)
-          plugins_directory = if args[:plugins_directory]
-                                Pathname.new(args[:plugins_directory])
-                              else
-                                Pathname.new('.')
-                              end
           config = if args[:yaml_file]
                      YAML.load_file(args[:yaml_file])
                    elsif args[:config_file]
-                     config_dsl = Observed::ConfigDSL.new(plugins_directory: plugins_directory)
-                     config_dsl.instance_eval(File.read(args[:config_file]), args[:config_file])
+                     path = args[:config_file]
+                     config_dsl = Observed::ConfigDSL.new
+                     config_dsl.eval_file(path)
                      config_dsl.config
                    else
                      c = args[:config]

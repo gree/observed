@@ -52,41 +52,11 @@ module Observed
         example_group.extend self
       end
 
-      def undefine_const(klass)
-        klass_name = klass.to_s
-        md = klass_name.match(/(.+)::([^:]+)/)
-        if md
-          Observed::SpecHelpers.logger.debug "Removing the const #{md[2]} in #{md[1]}"
-          enclosing_module_name, klass_name = md[1..2]
-          enclosing_module = eval enclosing_module_name
-        else
-          enclosing_module = Object
-        end
-        enclosing_module.send(:remove_const, klass_name.intern)
-      end
-
       def logger
         @logger ||= Logger.new(STDOUT)
       end
 
     end
 
-    def define_input_plugin(class_name, &block)
-      Object.const_set(
-        class_name,
-        Class.new(Observed::Observer) do
-          instance_eval &block
-        end
-      )
-    end
-
-    def define_output_plugin(class_name, &block)
-      Object.const_set(
-        class_name,
-        Class.new(Observed::Reporter) do
-          instance_eval &block
-        end
-      )
-    end
   end
 end

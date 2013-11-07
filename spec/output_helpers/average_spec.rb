@@ -7,18 +7,14 @@ describe Observed::OutputHelpers::Average do
 
   include Observed::SpecHelpers
 
-  before {
-    define_output_plugin 'ExampleAveragePlugin' do
+  let(:plugin) {
+    Class.new(Observed::Reporter) do
       include Observed::OutputHelpers::Average
-
-      def self.plugin_name
-        'avg'
-      end
     end
   }
 
   subject {
-    output = ExampleAveragePlugin.new
+    output = plugin.new
     output.configure system: system, tag: 'foo.avg', time_window: 1.0, input_key: :num, output_key: :avg
     output
   }

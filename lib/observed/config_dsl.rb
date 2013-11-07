@@ -6,26 +6,24 @@ module Observed
   # ConfigDSL.new.instance_eval user_code_from_configuration_file
   class ConfigDSL
 
-    alias original_require require
-
-    def initialize(options={})
-      configure(options)
+    def initialize
     end
 
-    def configure(options)
-      if options[:plugins_directory]
-        @plugins_directory = options[:plugins_directory]
-      end
+    def eval_file(file)
+      @file = File.expand_path(file)
+      working_directory File.dirname(@file)
+      instance_eval(File.read(file), @file)
     end
 
-    # We want to require Ruby scripts reside in the same directory of `observed.conf` a.k.a Observed's configuration.
-    # For that, we have to mutate Ruby's LOAD_PATH but we also prefer mutating it locally in this method over
-    # mutating it globally.
-    def require(lib)
-      $LOAD_PATH.push plugins_directory.to_s
-      #original_require "#{plugins_directory + lib}"
-      original_require lib
-      $LOAD_PATH.delete plugins_directory.to_s
+    def working_directory(wd=nil)
+      @working_directory = wd if wd
+      @working_directory
+    end
+
+    def require_relative(lib)
+      path = File.expand_path("#{working_directory}/#{lib}")
+      logger.debug "Require '#{path}'"
+      require path
     end
 
     # @param [String] tag The tag which is assigned to data which is generated from this input and is sent to output
@@ -59,8 +57,7 @@ module Observed
     # @param [String|Pathname] file The path to Ruby script containing the code in Observed's configuration DSL,
     # typically `observed.conf`.
     def load!(file)
-      code = File.read(file)
-      instance_eval code, file
+      eval_file file
     end
 
     private
@@ -75,10 +72,6 @@ module Observed
 
     def outputs
       @outputs ||= {}
-    end
-
-    def plugins_directory
-      @plugins_directory ||= Pathname.new('.')
     end
   end
 end

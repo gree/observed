@@ -4,10 +4,6 @@ require 'observed/builtin_plugins/average'
 
 describe Observed::BuiltinPlugins::Average do
 
-  before {
-    load 'observed/builtin_plugins/average.rb'
-  }
-
   subject {
     output = Observed::BuiltinPlugins::Average.new
     output.configure system: system, tag: 'foo.avg', time_window: 1.0, input_key: :num, output_key: :avg

@@ -1,5 +1,6 @@
 require 'observed'
 include Observed
 
-configure plugins_directory: 'spec/fixtures/configure_by_conf'
+require_relative '../configure_by_conf/foo_plugin'
+
 observe 'foo', { plugin: 'foo' }

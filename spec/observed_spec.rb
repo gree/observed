@@ -24,7 +24,8 @@ describe Observed do
         File.open('./observed.rb', 'w') do |file|
           file.write(
   <<-EOS
-  configure plugins_directory: 'spec/fixtures/configure_by_conf'
+  $LOAD_PATH << 'spec/fixtures/configure_by_conf'
+  require 'foo_plugin'
 
   observe 'foo', plugin: 'foo'
   EOS
@@ -42,6 +43,7 @@ describe Observed do
     before {
       Observed.init!
       $LOAD_PATH.push 'spec/fixtures/configure_by_require'
+      Observed.working_directory 'spec/fixtures/configure_by_require'
       require 'observed_conf'
     }
 

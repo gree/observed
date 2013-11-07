@@ -13,9 +13,11 @@ require 'forwardable'
 # require 'observed'
 # include Observed
 #
-# configure { plugins_directory: 'plugins' }
+# require 'observed/http'
+# require_relative 'your_plugin'
+#
 # observe 'myservice.response', { plugin: 'http', method: 'get', url: 'http://localhost:3000' }
-# match 'myservice.response', { plugin: 'stdout' }
+# report /myservice.response/, { plugin: 'stdout' }
 #
 # #=> Now we can obtain the described configuration by calling `Observed.config`
 module Observed
@@ -24,7 +26,7 @@ module Observed
 
   @@observed = Observed::ConfigDSL.new
 
-  def_delegators :@@observed, :require, :observe, :config, :load!
+  def_delegators :@@observed, :require_relative, :observe, :report, :write, :read, :config, :load!, :working_directory
 
   # Call this method before you are going to build 2nd or later Observed configuration using this module.
   # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
