@@ -1,12 +1,12 @@
 module OneshotSpec
-  class FooPlugin < Observed::InputPlugin
+  class FooPlugin < Observed::Observer
     default timeout_in_milliseconds: 5000
     default number_of_trials: 10
 
     def observe
       sleep_duration = rand / 20
       sleep sleep_duration
-      system.emit(tag, now, "Foo #{sleep_duration}")
+      system.report(tag, now, "Foo #{sleep_duration}")
     end
 
     def logger

@@ -1,5 +1,5 @@
-require 'observed/input_plugin'
-require 'observed/output_plugin'
+require 'observed/observer'
+require 'observed/reporter'
 
 module Observed
   class System
@@ -12,14 +12,14 @@ module Observed
       @config
     end
 
-    def emit(tag, time, data=nil)
+    def report(tag, time, data=nil)
       if data.nil?
         data = time
         time = self.now
       end
       outputs.each do |tag_pattern, output|
         if output.match(tag)
-          output.emit(tag, time, data)
+          output.report(tag, time, data)
         end
       end
     end
@@ -53,7 +53,7 @@ module Observed
     def input_plugins
       @plugins ||= begin
         input_plugins = {}
-        Observed::InputPlugin.plugins.each do |plugin|
+        Observed::Observer.select_named_plugins.each do |plugin|
           input_plugins[plugin.plugin_name] = plugin
         end
         input_plugins
@@ -63,7 +63,7 @@ module Observed
     def output_plugins
       @output_plugins ||= begin
         output_plugins = {}
-        Observed::OutputPlugin.plugins.each do |plugin|
+        Observed::Reporter.select_named_plugins.each do |plugin|
           output_plugins[plugin.plugin_name] = plugin
         end
         output_plugins

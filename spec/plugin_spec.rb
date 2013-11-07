@@ -1,14 +1,14 @@
 require 'spec_helper'
-require 'observed/input_plugin'
+require 'observed/observer'
 
-describe Observed::InputPlugin do
+describe Observed::Observer do
 
   before {
     %w| Foo Bar Baz |.each do |class_name|
       if Object.const_defined? class_name
         Object.send(:remove_const, class_name)
       end
-      Observed::InputPlugin.instance_variable_set :@plugins, []
+      Observed::Observer.instance_variable_set :@plugins, []
     end
   }
 
@@ -17,7 +17,7 @@ describe Observed::InputPlugin do
     it 'can be given by constructor parameters' do
       Object.const_set(
           'Foo',
-          Class.new(Observed::InputPlugin) do
+          Class.new(Observed::Observer) do
             attribute :timeout_in_milliseconds
             attribute :number_of_trials
           end
@@ -37,7 +37,7 @@ describe Observed::InputPlugin do
     it 'can have a default value' do
       Object.const_set(
           'Foo',
-          Class.new(Observed::InputPlugin) do
+          Class.new(Observed::Observer) do
             attribute :timeout_in_milliseconds
             attribute :number_of_trials
             default :timeout_in_milliseconds => 5000
@@ -57,7 +57,7 @@ describe Observed::InputPlugin do
       it 'raises errors when accessed' do
         Object.const_set(
             'Foo',
-            Class.new(Observed::InputPlugin) do
+            Class.new(Observed::Observer) do
               attribute :timeout_in_milliseconds
               attribute :number_of_trials
             end
@@ -73,19 +73,17 @@ describe Observed::InputPlugin do
 
   end
 
-  describe '.plugins' do
+  describe '.find_plugin_named' do
 
-    context 'with no plugins' do
-      it 'returns an empty array' do
-        expect(Observed::InputPlugin.plugins.size).to eq(0)
-      end
+    it 'returns nil when no plugin with the specific name found' do
+      expect(Observed::Observer.find_plugin_named('an_invalid_name')).to be_nil
     end
 
     context 'with a plugin' do
       before {
         Object.const_set(
           'Foo',
-          Class.new(Observed::InputPlugin) do
+          Class.new(Observed::Observer) do
             attribute :timeout_in_milliseconds
             attribute :number_of_trials
 
@@ -105,7 +103,7 @@ describe Observed::InputPlugin do
         )
       }
       it 'returns an array with single element' do
-        expect(Observed::InputPlugin.plugins).to eq([Foo])
+        expect(Observed::Observer.find_plugin_named('foo')).to eq(Foo)
       end
     end
 
@@ -113,19 +111,20 @@ describe Observed::InputPlugin do
       before {
         Object.const_set(
           'Bar',
-          Class.new(Observed::InputPlugin) do
-            ;
+          Class.new(Observed::Observer) do
+            plugin_name 'bar'
           end
         )
         Object.const_set(
           'Baz',
-          Class.new(Observed::InputPlugin) do
-              ;
+          Class.new(Observed::Observer) do
+            plugin_name 'baz'
           end
         )
       }
       it 'returns an array containing the plugins' do
-        expect(Observed::InputPlugin.plugins).to eq([Bar, Baz])
+        expect(Observed::Observer.find_plugin_named('bar')).to eq(Bar)
+        expect(Observed::Observer.find_plugin_named('baz')).to eq(Baz)
       end
     end
 

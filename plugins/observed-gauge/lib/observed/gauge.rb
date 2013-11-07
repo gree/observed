@@ -1,11 +1,11 @@
-require 'observed/output_plugin'
+require 'observed/reporter'
 require 'observed/gauge/version'
 require 'logger'
 require 'rrd'
 
 module Observed
   module Plugins
-    class Gauge < Observed::OutputPlugin
+    class Gauge < Observed::Reporter
       attribute :tag
       attribute :key_path
       attribute :coerce, default: ->(data){ data }
@@ -13,14 +13,14 @@ module Observed
       attribute :step
       attribute :period
 
-      def emit(tag, time, data)
+      def report(tag, time, data)
         rewrote = update_value_for_key_path(data, key_path) do |v|
           sample = coerce.call(v)
           average = get_cdp_updated_with(time, sample)
           average
         end
         unless fetch_value_for_key_path(rewrote, key_path).nan?
-          system.emit(self.tag, rewrote)
+          system.report(self.tag, rewrote)
         end
       end
 

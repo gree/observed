@@ -8,10 +8,10 @@ describe Observed::Application::Oneshot do
       if Object.const_defined? class_name
         Object.send(:remove_const, class_name)
       end
-      Observed::InputPlugin.instance_variable_set :@plugins, []
+      Observed::Observer.instance_variable_set :@plugins, []
       Object.const_set(
           'BarPlugin',
-          Class.new(Observed::InputPlugin) do
+          Class.new(Observed::Observer) do
             def observe
               sleep rand
               'Bar'

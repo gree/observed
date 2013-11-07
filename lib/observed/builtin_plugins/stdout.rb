@@ -1,13 +1,13 @@
-require 'observed/input_plugin'
-require 'observed/output_plugin'
+require 'observed/observer'
+require 'observed/reporter'
 
 module Observed
   module BuiltinPlugins
-    class Stdout < Observed::OutputPlugin
+    class Stdout < Observed::Reporter
       # @param [String] tag
       # @param [Fixnum] time
       # @param [Observed::Data] data
-      def emit(tag, time, data)
+      def report(tag, time, data)
         puts "#{Time.at(time)} #{tag} #{data}"
       end
 

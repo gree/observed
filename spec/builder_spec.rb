@@ -205,7 +205,7 @@ module Observed
     attribute :reader
     def observe
       data = reader.read
-      system.emit(tag, data)
+      system.report(tag, data)
     end
   end
 
@@ -265,7 +265,7 @@ describe Observed::Builder do
         content = File.open(path, 'r') do |f|
           f.read
         end
-        system.emit(tag, { key => content })
+        system.report(tag, { key => content })
       end
     end
     { 'my_file' => my_file }
@@ -340,7 +340,7 @@ describe Observed::Builder do
     File.open('foo.txt', 'w') do |f|
       f.write('file content')
     end
-    system.expects(:emit).with('foo.bar', { 'content' => 'file content' })
+    system.expects(:report).with('foo.bar', { 'content' => 'file content' })
     expect { subject.build.observers.first.observe }.to_not raise_error
   end
 
@@ -352,7 +352,7 @@ describe Observed::Builder do
     File.open('foo.txt', 'w') do |f|
       f.write('file content')
     end
-    system.expects(:emit).with('foo.bar', { 'content' => 'file content' })
+    system.expects(:report).with('foo.bar', { 'content' => 'file content' })
     expect { subject.build.observers.first.observe }.to_not raise_error
   end
 

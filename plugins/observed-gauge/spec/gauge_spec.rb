@@ -18,16 +18,16 @@ shared_examples_for 'the observed-gauge plugin' do
     expect(subject.match('test.foo')).to be_true
   end
 
-  it 'emit data with averaged values' do
+  it 'reports data with averaged values' do
     subject.prepare_rrd(start: t - 120, rrd: rrd)
-    system.expects(:emit).with(tag, expected_data.freeze).once
-    expect { subject.emit('test.foo', t - 120, data) }.to_not raise_error
-    expect { subject.emit('test.foo', t - 60, data) }.to_not raise_error
-    expect { subject.emit('test.foo', t, data) }.to_not raise_error
+    system.expects(:report).with(tag, expected_data.freeze).once
+    expect { subject.report('test.foo', t - 120, data) }.to_not raise_error
+    expect { subject.report('test.foo', t - 60, data) }.to_not raise_error
+    expect { subject.report('test.foo', t, data) }.to_not raise_error
   end
 
-  it 'creates rrd files automatically on first emit' do
-    expect { subject.emit('test.foo', t, data) }.to_not raise_error
+  it 'creates rrd files automatically on first report' do
+    expect { subject.report('test.foo', t, data) }.to_not raise_error
 
     expect { File.exist? rrd }.to be_true
   end
@@ -117,7 +117,7 @@ describe Observed::Plugins::Gauge do
       }
 
       it 'raise an error' do
-        expect { subject.emit('test.foo', t, data) }.to raise_error(/Unexpected type of key_path met/)
+        expect { subject.report('test.foo', t, data) }.to raise_error(/Unexpected type of key_path met/)
       end
     end
 

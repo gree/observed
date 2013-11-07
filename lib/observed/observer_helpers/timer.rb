@@ -1,5 +1,5 @@
 module Observed
-  module InputHelpers
+  module ObserverHelpers
     module Timer
 
       require 'timeout'
@@ -24,12 +24,12 @@ module Observed
         end
       end
 
-      def time_and_emit(options={}, &block)
+      def time_and_report(options={}, &block)
         tag = options[:tag] || (self.respond_to?(:tag) && self.tag) || fail("The key `:tag` must be exist in the options: #{options}")
         format = options[:format] || ->(r){ r }
         result = time(options, &block)
 
-        system.emit("#{tag}.#{result[:status]}", format.call(result))
+        system.report("#{tag}.#{result[:status]}", format.call(result))
       end
 
     end

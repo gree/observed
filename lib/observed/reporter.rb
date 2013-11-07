@@ -3,7 +3,7 @@ require 'observed/configurable'
 
 module Observed
 
-  class OutputPlugin
+  class Reporter
     include Pluggable
     include Configurable
 
@@ -18,12 +18,8 @@ module Observed
       tag.match(tag_pattern)
     end
 
-    def emit(tag, time, data)
+    def report(tag, time, data)
       raise NotImplementedError.new
-    end
-
-    def now
-      Time.now
     end
 
   end

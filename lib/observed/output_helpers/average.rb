@@ -31,7 +31,7 @@ module Observed
       # @param [String] tag
       # @param [Time] time
       # @param [String] data
-      def emit(tag, time, data)
+      def report(tag, time, data)
         output_key = if self.output_key == UNDEFINED
                        input_key
                      else
@@ -44,7 +44,7 @@ module Observed
           logger.debug "Encountered not-matching data: #{data} for the tag '#{tag}'"
         end
         elapsed_time = md[1].to_f
-        now = self.now
+        now = system.now
         if elapsed_time.zero?
           logger.debug "`elapsed_time` is zero. Possibly a bug? In: matched by the pattern #{elapsed_time_pattern} against the data #{data}"
         end
@@ -58,9 +58,9 @@ module Observed
           sum = portion.values.inject(0.0) { |sum, t| sum + t }
           avg = sum / portion.size
           logger.debug "Emitting #{avg}"
-          system.emit(self.tag, { output_key => format.call(avg) })
+          system.report(self.tag, { output_key => format.call(avg) })
         else
-          logger.debug "Skipping emit since no data exist within the period from #{now - time_window} until #{now}."
+          logger.debug "Skipped reporting emit since no data exist within the period from #{system.now - time_window} until #{now}."
         end
       end
 

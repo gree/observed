@@ -1,5 +1,5 @@
 module OneshotSpec
-  class FooPlugin < Observed::InputPlugin
+  class FooPlugin < Observed::Observer
     default :timeout_in_milliseconds => 5000
     default :number_of_trials => 10
 

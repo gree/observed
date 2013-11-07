@@ -3,7 +3,7 @@ require 'observed/configurable'
 
 module Observed
 
-  class InputPlugin
+  class Observer
     include Pluggable
     include Configurable
 
@@ -12,10 +12,6 @@ module Observed
 
     def observe
       raise NotImplementedError.new
-    end
-
-    def now
-      Time.now
     end
 
   end

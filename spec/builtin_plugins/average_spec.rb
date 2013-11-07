@@ -15,15 +15,17 @@ describe Observed::BuiltinPlugins::Average do
   }
 
   let(:system) {
-    mock('system')
+    sys = mock('system')
+    sys.stubs(now: Time.now)
+    sys
   }
 
-  it 'should emit averages of inputs' do
-    system.expects(:emit).with('foo.avg', {avg: 100.0})
-    system.expects(:emit).with('foo.avg', {avg: 200.0})
-    system.expects(:emit).with('foo.avg', {avg: 300.0})
-    subject.emit('foo', Time.now, {num: '100 milliseconds'})
-    subject.emit('foo', Time.now, {num: '300 milliseconds'})
-    subject.emit('foo', Time.now, {num: '500 milliseconds'})
+  it 'should report averages of inputs' do
+    system.expects(:report).with('foo.avg', {avg: 100.0})
+    system.expects(:report).with('foo.avg', {avg: 200.0})
+    system.expects(:report).with('foo.avg', {avg: 300.0})
+    subject.report('foo', Time.now, {num: '100 milliseconds'})
+    subject.report('foo', Time.now, {num: '300 milliseconds'})
+    subject.report('foo', Time.now, {num: '500 milliseconds'})
   end
 end

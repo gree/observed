@@ -1,5 +1,5 @@
 require 'logger'
-require 'observed/input_plugin'
+require 'observed/observer'
 require 'observed/config_dsl'
 require 'observed/config'
 require 'observed/system'

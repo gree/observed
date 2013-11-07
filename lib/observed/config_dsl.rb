@@ -1,4 +1,4 @@
-require 'observed/input_plugin'
+require 'observed/observer'
 
 module Observed
   # The DSL to describe Observed's configuration.

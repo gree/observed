@@ -1,9 +1,9 @@
-require 'observed/output_plugin'
+require 'observed/reporter'
 require 'observed/output_helpers/average'
 
 module Observed
   module BuiltinPlugins
-    class Average < Observed::OutputPlugin
+    class Average < Observed::Reporter
 
       include Observed::OutputHelpers::Average
 

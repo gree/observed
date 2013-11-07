@@ -1,13 +1,13 @@
 require 'observed/http/version'
-require 'observed/input_helpers/timer'
+require 'observed/observer_helpers/timer'
 require 'timeout'
 require 'net/http'
 
 module Observed
   module Plugins
-    class HTTP < Observed::InputPlugin
+    class HTTP < Observed::Observer
 
-      include Observed::InputHelpers::Timer
+      include Observed::ObserverHelpers::Timer
 
       attribute :timeout_in_milliseconds, default: 5000
 
@@ -34,7 +34,7 @@ module Observed
           fail "Invalid configuration on timeout: `timeout` must be a number but it was not(=#{timeout_in_seconds})"
         end
 
-        time_and_emit(tag: self.tag, timeout_in_seconds: timeout_in_seconds) do
+        time_and_report(tag: self.tag, timeout_in_seconds: timeout_in_seconds) do
 
           logger.debug "Sending a HTTP request with the timeout of #{timeout_in_seconds} seconds"
 

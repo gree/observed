@@ -1,20 +1,20 @@
 require 'spec_helper'
-require 'observed/input_helpers/timer'
-require 'observed/input_plugin'
+require 'observed/observer_helpers/timer'
+require 'observed/observer'
 
-describe Observed::InputHelpers::Timer do
+describe Observed::ObserverHelpers::Timer do
 
   include Observed::SpecHelpers
 
   before {
-    class ExampleTimerPlugin < Observed::InputPlugin
-      include Observed::InputHelpers::Timer
+    class ExampleTimerPlugin < Observed::Observer
+      include Observed::ObserverHelpers::Timer
 
       attribute :timeout_in_milliseconds
       attribute :time_to_sleep
 
       def observe
-        time_and_emit(timeout_in_seconds: self.timeout_in_milliseconds / 1000.0) do
+        time_and_report(timeout_in_seconds: self.timeout_in_milliseconds / 1000.0) do
           sleep(time_to_sleep)
           time_to_sleep
         end
@@ -43,10 +43,10 @@ describe Observed::InputHelpers::Timer do
     m
   }
 
-  it 'should emit results with elapsed times' do
-    system.expects(:emit).with('foo.timed.success', status: :success, elapsed_time: 1.0, result: 0.001)
-    system.expects(:emit).with('foo.timed.success', status: :success, elapsed_time: 2.0, result: 0.001)
-    system.expects(:emit).with('foo.timed.success', status: :success, elapsed_time: 3.0, result: 0.001)
+  it 'should report results with elapsed times' do
+    system.expects(:report).with('foo.timed.success', status: :success, elapsed_time: 1.0, result: 0.001)
+    system.expects(:report).with('foo.timed.success', status: :success, elapsed_time: 2.0, result: 0.001)
+    system.expects(:report).with('foo.timed.success', status: :success, elapsed_time: 3.0, result: 0.001)
     subject.observe
     subject.observe
     subject.observe

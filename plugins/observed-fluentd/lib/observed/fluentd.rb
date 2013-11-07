@@ -1,16 +1,16 @@
 require 'observed/fluentd/version'
-require 'observed/output_plugin'
+require 'observed/reporter'
 require 'fluent-logger'
 
 module Observed
   module Plugins
-    class Fluentd < Observed::OutputPlugin
+    class Fluentd < Observed::Reporter
       attribute :tag
       attribute :host
       attribute :port, default: 24224
       attribute :transform, default: ->(data){ data }
 
-      def emit(tag, time, data)
+      def report(tag, time, data)
         fluent_logger.post(self.tag, transform.call(data))
       end
 
