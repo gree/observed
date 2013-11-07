@@ -2,7 +2,6 @@ require 'observed/pluggable'
 require 'observed/configurable'
 
 module Observed
-
   class Reporter
     include Pluggable
     include Configurable
@@ -15,7 +14,7 @@ module Observed
 
     # @param [String] tag
     def match(tag)
-      tag.match(tag_pattern)
+      raise NotImplementedError.new
     end
 
     def report(tag, time, data)

@@ -7,8 +7,6 @@ module OneshotSpec
       system.report(tag, system.now, "Foo #{sleep_duration}")
     end
 
-    def self.plugin_name
-      'foo'
-    end
+    plugin_name 'foo'
   end
 end
