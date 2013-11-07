@@ -3,16 +3,16 @@ module Observed
     # @option args [Array] inputs
     # @option args [Array] outputs
     def initialize(args)
-      @inputs = args[:inputs] || args['inputs'] || fail('Missing inputs')
-      @outputs = args[:outputs] || args['inputs'] || fail('Missing outputs')
+      @observers = args[:observers] || args['observers'] || fail("Missing observers in #{args}")
+      @reporters = args[:reporters] || args['reporters'] || fail("Missing reporters in #{args}")
     end
 
-    def inputs
-      @inputs
+    def observers
+      @observers
     end
 
-    def outputs
-      @outputs
+    def reporters
+      @reporters
     end
 
     class << self

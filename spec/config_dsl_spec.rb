@@ -11,6 +11,6 @@ describe Observed::ConfigDSL do
       match 'foo', plugin: 'stdout'
     end
 
-    expect(subject.config).to eq({ inputs: {'foo' => {plugin: 'foo', name: 'name'}}, outputs: {'foo' => {plugin: 'stdout'}}})
+    expect(subject.config).to eq({ observers: {'foo' => {plugin: 'foo', name: 'name'}}, reporters: {'foo' => {plugin: 'stdout'}}})
   end
 end

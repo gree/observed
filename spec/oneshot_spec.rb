@@ -22,14 +22,14 @@ describe Observed::Application::Oneshot do
     }
     let(:config) {
       {
-          'inputs' => {
+          'observers' => {
             'test' => {
                 plugin: 'oneshot_spec_bar',
                 method: 'get',
                 url: 'http://localhost:3000'
             }
           },
-          'outputs' => {
+          'reporters' => {
             'test.*' => {
                 plugin: 'stdout'
             }

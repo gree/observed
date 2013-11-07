@@ -50,7 +50,7 @@ module Observed
     end
 
     def config
-      { inputs: inputs, outputs: outputs }
+      { observers: inputs, reporters: outputs }
     end
 
     # Load the file and evalute the containing code in context of this object(a.k.a DSL).
@@ -71,7 +71,7 @@ module Observed
     end
 
     def outputs
-      @outputs ||= {}
+      @reporters ||= {}
     end
   end
 end

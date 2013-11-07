@@ -17,9 +17,9 @@ module Observed
         data = time
         time = self.now
       end
-      outputs.each do |tag_pattern, output|
-        if output.match(tag)
-          output.report(tag, time, data)
+      reporters.each do |tag_pattern, reporter|
+        if reporter.match(tag)
+          reporter.report(tag, time, data)
         end
       end
     end
@@ -27,13 +27,13 @@ module Observed
     def run(observation_name=nil)
 
       if observation_name
-        inputs_to_run = inputs.reject { |name, _| name != observation_name }
-        fail "No configuration found for observation name '#{observation_name}'" if inputs_to_run.empty?
+        observers_to_run = observers.reject { |name, _| name != observation_name }
+        fail "No configuration found for observation name '#{observation_name}'" if observers_to_run.empty?
       else
-        inputs_to_run = inputs
+        observers_to_run = observers
       end
 
-      inputs_to_run.map do |tag, input|
+      observers_to_run.map do |tag, input|
         logger.debug "Observe: #{tag}"
         input.observe
       end
@@ -50,63 +50,63 @@ module Observed
 
     private
 
-    def input_plugins
+    def observer_plugins
       @plugins ||= begin
-        input_plugins = {}
+        plugins = {}
         Observed::Observer.select_named_plugins.each do |plugin|
-          input_plugins[plugin.plugin_name] = plugin
+          plugins[plugin.plugin_name] = plugin
         end
-        input_plugins
+        plugins
       end
     end
 
-    def output_plugins
-      @output_plugins ||= begin
-        output_plugins = {}
+    def reporter_plugins
+      @reporter_plugins ||= begin
+        plugins = {}
         Observed::Reporter.select_named_plugins.each do |plugin|
-          output_plugins[plugin.plugin_name] = plugin
+          plugins[plugin.plugin_name] = plugin
         end
-        output_plugins
+        plugins
       end
     end
 
-    def inputs
-      @inputs ||= begin
+    def observers
+      @observers ||= begin
 
-        input_configs = config.inputs
+        observer_configs = config.observers
 
-        inputs = {}
+        observers = {}
 
-        input_configs.each do |tag, input_config|
+        observer_configs.each do |tag, input_config|
           plugin_name = input_config[:plugin] || fail(RuntimeError, %Q|Missing plugin name for the tag "#{tag}" in "#{input_config}" in "#{config}".|)
-          plugin = input_plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{input_plugins}".|)
+          plugin = observer_plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{observer_plugins}".|)
           updated_config = input_config.merge(tag: tag)
-          input = plugin.new(updated_config)
-          input.configure(system: self, logger: logger)
-          inputs[tag] = input
+          observer = plugin.new(updated_config)
+          observer.configure(system: self, logger: logger)
+          observers[tag] = observer
         end
 
-        inputs
+        observers
       end
     end
 
-    def outputs
-      @outputs ||= begin
+    def reporters
+      @reporters ||= begin
 
-        output_configs = config.outputs
+        reporter_configs = config.reporters
 
-        outputs = {}
+        reporters = {}
 
-        output_configs.each do |tag_pattern, output_config|
+        reporter_configs.each do |tag_pattern, output_config|
           plugin_name = output_config[:plugin] || fail(RuntimeError, %Q|Missing plugin name for the output for "#{tag_pattern}" in "#{output_config}" in #{config}.|)
-          plugin = output_plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{output_plugins}".|)
+          plugin = reporter_plugins[plugin_name] || fail(RuntimeError, %Q|The plugin named "#{plugin_name}" is not found in plugins list "#{reporter_plugins}".|)
           updated_config = output_config.merge(tag_pattern: Regexp.new(tag_pattern))
-          output = plugin.new(updated_config)
-          output.configure(system: self, logger: logger)
-          outputs[tag_pattern] = output
+          reporter = plugin.new(updated_config)
+          reporter.configure(system: self, logger: logger)
+          reporters[tag_pattern] = reporter
         end
 
-        outputs
+        reporters
       end
     end
 
