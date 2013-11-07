@@ -88,7 +88,8 @@ module Observed
 
     attribute :writer_plugins
     attribute :reader_plugins
-    attribute :adapter_plugins
+    attribute :reporter_plugins
+    attribute :observer_plugins
     attribute :system
 
     def build
@@ -102,39 +103,59 @@ module Observed
 
     def report(tag_pattern, args)
       writer = write(args)
-      reporters << Observed::Reporter.new.configure(tag_pattern: tag_pattern, writer: writer, system: system)
+      reporter = if writer
+                   Observed::DefaultReporter.new.configure(tag_pattern: tag_pattern, writer: writer, system: system)
+                 else
+                   via = args[:via] || args[:using]
+                   with = args[:with] || args[:which]
+                   reporter_plugins[via].new(with)
+                 end
+      reporters << reporter
     end
 
     def observe(tag, args)
       reader = read(args)
-      observers << Observed::Observer.new.configure(tag: tag, reader: reader, system: system)
+      observer = if reader
+                   Observed::DefaultObserver.new.configure(tag: tag, reader: reader, system: system)
+                 else
+                   via = args[:via] || args[:using]
+                   with = args[:with] || args[:which]
+                   observer_plugins[via].new(with.merge(tag: tag, system: system))
+                 end
+      observers << observer
     end
 
     def write(args)
       to = args[:to]
-      with = args[:with]
-      writers << writer = case to
-                          when String
-                            writer_plugins[to].new(with)
-                          when Observed::Writer
-                            to
-                          else
-                            fail "Unexpected type of value for the key :to in: #{args}"
-                          end
+      with = args[:with] || args[:which]
+      writer = case to
+               when String
+                 writer_plugins[to].new(with)
+               when Observed::Writer
+                 to
+               when nil
+                 nil
+               else
+                 fail "Unexpected type of value for the key :to in: #{args}"
+               end
+      writers << writer if writer
       writer
     end
 
     def read(args)
       from = args[:from]
-      with = args[:with]
-      readers << reader = case from
-                          when String
-                            reader_plugins[from].new(with)
-                          when Observed::Reader
-                            from
-                          else
-                            fail "Unexpected type of value for the key :from in: #{args}"
-                          end
+      with = args[:with] || [:which]
+      reader = case from
+                 when String
+                   reader_plugins[from].new(with)
+                 when Observed::Reader
+                   from
+                 when nil
+                   nil
+                 else
+                   fail "Unexpected type of value for the key :from in: #{args}"
+                 end
+      readers << reader if reader
       reader
     end
 
@@ -169,37 +190,19 @@ module Observed
     end
   end
 
-  class Translator
+  class Observer
     include Observed::Configurable
-    def translate(data)
+
+    attribute :tag
+    attribute :system
+
+    def observe
       fail 'Not Implemented'
     end
   end
 
-  class ReadAdapter
-    include Observed::Configurable
-    attribute :translator
+  class DefaultObserver < Observer
     attribute :reader
-    def read
-      data = reader.read
-      translator.translate(data)
-    end
-  end
-
-  class WriteTranslator
-    include Observed::Configurable
-    attribute :translator
-    attribute :writer
-    def write(tag, time, data)
-      writer.write tag, time, translator.translate(data)
-    end
-  end
-
-  class Observer
-    include Observed::Configurable
-    attribute :reader
-    attribute :tag
-    attribute :system
     def observe
       data = reader.read
       system.emit(tag, data)
@@ -208,11 +211,24 @@ module Observed
 
   class Reporter
     include Observed::Configurable
+
+    def match(tag)
+      fail 'Not Implemented'
+    end
+
+    def report(tag, time, data)
+      fail 'Not Implemented'
+    end
+  end
+
+  class DefaultReporter < Observed::Reporter
     attribute :writer
     attribute :tag_pattern
+
     def match(tag)
       tag_pattern.match(tag)
     end
+
     def report(tag, time, data)
       writer.write tag, time, data
     end
@@ -231,7 +247,8 @@ describe Observed::Builder do
     subject.configure(
       writer_plugins: writer_plugins,
       reader_plugins: reader_plugins,
-      adapter_plugins: adapter_plugins,
+      observer_plugins: observer_plugins,
+      reporter_plugins: reporter_plugins,
       system: system
     )
   }
@@ -240,14 +257,32 @@ describe Observed::Builder do
     mock('system')
   }
 
-  let(:adapter_plugins) {
-    transform = Class.new(Observed::Translator) do
-      attribute :transform
-      def translate(data)
-        transform.call data, Observed::HashFetcher.new(data), Observed::HashBuilder.new({})
+  let(:observer_plugins) {
+    my_file = Class.new(Observed::Observer) do
+      attribute :path
+      attribute :key
+      def observe
+        content = File.open(path, 'r') do |f|
+          f.read
+        end
+        system.emit(tag, { key => content })
       end
     end
-    { 'transform' => transform }
+    { 'my_file' => my_file }
+  }
+
+  let(:reporter_plugins) {
+    my_stdout = Class.new(Observed::Reporter) do
+      attribute :format
+      def match(tag)
+        true
+      end
+      def report(tag, time, data)
+        text = format.call tag, time, data, Observed::HashFetcher.new(data)
+        STDOUT.puts text
+      end
+    end
+    { 'my_stdout' => my_stdout }
   }
 
   let(:writer_plugins) {
@@ -297,7 +332,7 @@ describe Observed::Builder do
     expect(subject.build.readers.first.read).to eq({ 'content' => 'file content' })
   end
 
-  it 'creates observers' do
+  it 'creates observers from reader plugins' do
     subject.observe 'foo.bar', from: 'file', with: {
       path: 'foo.txt',
       key: 'content'
@@ -309,12 +344,37 @@ describe Observed::Builder do
     expect { subject.build.observers.first.observe }.to_not raise_error
   end
 
-  it 'creates reporters' do
+  it 'creates observers from observer plugins' do
+    subject.observe 'foo.bar', via: 'my_file', which: {
+        path: 'foo.txt',
+        key: 'content'
+    }
+    File.open('foo.txt', 'w') do |f|
+      f.write('file content')
+    end
+    system.expects(:emit).with('foo.bar', { 'content' => 'file content' })
+    expect { subject.build.observers.first.observe }.to_not raise_error
+  end
+
+  it 'creates reporters from writer plugins' do
     tag = 'foo.bar'
     time = Time.now
 
     subject.report /foo\.bar/, to: 'stdout', with: {
       format: -> tag, time, data, d { "foo.bar #{time} #{d[tag]}" }
+    }
+    reporter = subject.reporters.first
+    STDOUT.expects(:puts).with("foo.bar #{time} 123").once
+    expect(reporter.match(tag)).to be_true
+    expect { reporter.report(tag, time, { foo: { bar: 123 }}) }.to_not raise_error
+  end
+
+  it 'creates reporters from reporter plugins' do
+    tag = 'foo.bar'
+    time = Time.now
+
+    subject.report /foo\.bar/, via: 'my_stdout', with: {
+        format: -> tag, time, data, d { "foo.bar #{time} #{d[tag]}" }
     }
     reporter = subject.reporters.first
     STDOUT.expects(:puts).with("foo.bar #{time} 123").once
