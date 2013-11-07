@@ -44,13 +44,21 @@ describe Observed::Configurable do
   context 'configured through `configure(args)` method' do
     subject {
       foo = ConfigurableSpec::Foo.new
-      foo.configure({foo: 1, bar: 2, baz: 3})
+      foo.configure(args)
       foo
     }
-    it 'prefers values from `configure(args)` over defaults' do
-      expect(subject.foo).to eq(1)
-      expect(subject.bar).to eq(2)
-      expect(subject.baz).to eq(3)
+    shared_examples_for 'values are set' do
+      it 'prefers values from `configure(args)` over defaults' do
+        expect(subject.foo).to eq(1)
+        expect(subject.bar).to eq(2)
+        expect(subject.baz).to eq(3)
+      end
+    end
+    context 'when args has symbol keys' do
+      let(:args) {
+        {foo: 1, bar: 2, baz: 3}
+      }
+      it_behaves_like 'values are set'
     end
   end
 
