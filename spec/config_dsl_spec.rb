@@ -15,7 +15,7 @@ describe Observed::ConfigDSL do
   }
   let(:foo) {
     Class.new(Observed::Observer) do
-      def foo
+      def observe
 
       end
       plugin_name 'foo'
@@ -24,7 +24,7 @@ describe Observed::ConfigDSL do
   let(:stdout) {
     Class.new(Observed::Reporter) do
       include Observed::Reporter::RegexpMatching
-      def bar
+      def report(tag, time, data)
 
       end
       plugin_name 'stdout'
@@ -42,7 +42,7 @@ describe Observed::ConfigDSL do
   it 'creates a config' do
     subject.instance_eval do
       observe 'foo', via: 'foo', with: { name: 'name' }
-      report 'foo', via: 'stdout'
+      report /foo/, via: 'stdout'
     end
 
     #expect(subject.config).to eq({ observers: {'foo' => {plugin: 'foo', name: 'name'}}, reporters: {'foo' => {plugin: 'stdout'}}})

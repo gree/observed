@@ -23,23 +23,49 @@ require 'forwardable'
 #
 # #=> Now we can obtain the described configuration by calling `Observed.config`
 module Observed
-  extend self
+
+  class Singleton
+    extend Forwardable
+
+    def_delegators :@observed, :require_relative, :observe, :report, :write, :read, :config, :load!, :working_directory
+
+    # Call this method before you are going to build 2nd or later Observed configuration using this module.
+    # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
+    # We have to reset its state via this `init!` method before building next configurations after the first one.
+    def init!
+      @sys = Observed::System.new
+      config_builder = Observed::ConfigBuilder.new(system: @sys)
+      @observed = Observed::ConfigDSL.new(builder: config_builder)
+    end
+
+    def configure(*args)
+      @observed.send :configure, *args
+    end
+  end
+
+  class << self
+    def included(klass)
+      ensure_singleton_initialized
+    end
+
+    def extended(klass)
+      ensure_singleton_initialized
+    end
+
+    def ensure_singleton_initialized
+      @@singleton ||= begin
+        s = Singleton.new
+        s.init!
+        s
+      end
+    end
+  end
+
   extend Forwardable
 
-  @@sys = Observed::System.new
-  @@observed = Observed::ConfigDSL.new(builder: Observed::ConfigBuilder.new(system: @@sys))
+  def_delegators :@@singleton, :init!, :configure, :require_relative, :observe, :report, :write, :read, :config,
+                 :load!, :working_directory
 
-  def_delegators :@@observed, :require_relative, :observe, :report, :write, :read, :config, :load!, :working_directory
-
-  # Call this method before you are going to build 2nd or later Observed configuration using this module.
-  # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
-  # We have to reset its state via this `init!` method before building next configurations after the first one.
-  def init!
-    @@observed = Observed::ConfigDSL.new(builder: Observed::ConfigBuilder.new(system: @@sys))
-  end
-
-  def configure(*args)
-    @@observed.send :configure, *args
-  end
+  extend self
 
 end

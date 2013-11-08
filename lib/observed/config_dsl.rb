@@ -1,6 +1,7 @@
 require 'observed/observer'
 require 'observed/configurable'
 require 'forwardable'
+require 'logger'
 
 module Observed
   # The DSL to describe Observed's configuration.
@@ -28,7 +29,8 @@ module Observed
     def eval_file(file)
       @file = File.expand_path(file)
       working_directory File.dirname(@file)
-      code = File.read(file)
+      logger.debug "Reading the file: #{@file}"
+      code = File.read(@file)
       logger.debug "Evaluating: #{code}"
       instance_eval(code, @file)
     end
