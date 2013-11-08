@@ -7,6 +7,10 @@ Before do
   @aruba_timeout_seconds = 120
 end
 
+When /^I run the command "([^"]+)"$/ do |cmd|
+  system cmd
+end
+
 When /^I start my daemon with "([^"]*)"$/ do |cmd|
   @root = Pathname.new(File.dirname(__FILE__)).parent.parent.expand_path
   command = "#{@root.join('bin')}/#{cmd}"

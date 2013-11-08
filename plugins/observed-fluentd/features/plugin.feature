@@ -35,18 +35,20 @@ Feature: Receives Observed's input and send it to Fluentd
 
     <match debug.**>
       type file
-      path tmp/aruba/fluent.out
+      path fluent.out
       time_slice_format foo
       utc
       flush_interval 1s
     </match>
     """
     When I run `pwd`
-    When I start my daemon with "fluentd -c tmp/aruba/fluent.conf"
+    When I run `fluentd -d pid_file -c fluent.conf`
+#    When I start my daemon with "fluentd -c tmp/aruba/fluent.conf"
     When I run `sleep 3`
     When I run `ruby test.rb`
-    Then a daemon called "fluentd" should be running
+    #Then a daemon called "fluentd" should be running
     When I run `sleep 3`
+    When I run the command "kill $(cat tmp/aruba/pid_file)"
     When I run `cat fluent.out.foo_0.log`
     Then the output should contain:
     """
