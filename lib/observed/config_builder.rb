@@ -1,15 +1,13 @@
+require 'observed/config'
 require 'observed/configurable'
-require 'observed/default_observer'
-require 'observed/default_reporter'
-require 'observed/hash_builder'
-require 'observed/hash_fetcher'
+require 'observed/default'
+require 'observed/hash'
 require 'observed/reader'
 require 'observed/writer'
-require 'observed/config'
 
 module Observed
 
-  class Builder
+  class ConfigBuilder
     include Observed::Configurable
 
     def initialize(args)
@@ -65,7 +63,7 @@ module Observed
       writer = write(args)
       tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
       reporter = if writer
-                   Observed::DefaultReporter.new.configure(tag_pattern: tag_pattern, writer: writer, system: system)
+                   Observed::Default::Reporter.new.configure(tag_pattern: tag_pattern, writer: writer, system: system)
                  else
                    via = args[:via] || args[:using]
                    with = args[:with] || args[:which] || {}
@@ -96,7 +94,7 @@ module Observed
     def observe(tag, args)
       reader = read(args)
       observer = if reader
-                   Observed::DefaultObserver.new.configure(tag: tag, reader: reader, system: system)
+                   Observed::Default::Observer.new.configure(tag: tag, reader: reader, system: system)
                  else
                    via = args[:via] || args[:using] ||
                        fail(RuntimeError, %Q|Missing observer plugin name for the tag "#{tag}" in "#{args}"|)

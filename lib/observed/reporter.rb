@@ -1,10 +1,10 @@
-require 'observed/pluggable'
 require 'observed/configurable'
+require 'observed/pluggable'
 
 module Observed
   class Reporter
-    include Pluggable
     include Configurable
+    include Pluggable
 
     # !@attribute [r] tag_pattern
     #   @return [Regexp]

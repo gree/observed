@@ -1,5 +1,5 @@
-require 'observed/pluggable'
 require 'observed/configurable'
+require 'observed/pluggable'
 
 module Observed
 

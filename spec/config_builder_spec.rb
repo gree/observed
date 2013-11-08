@@ -1,12 +1,12 @@
 require 'spec_helper'
-require 'observed/builder'
+require 'observed/config_builder'
 
-describe Observed::Builder do
+describe Observed::ConfigBuilder do
 
   include FakeFS::SpecHelpers
 
   subject {
-    Observed::Builder.new(
+    Observed::ConfigBuilder.new(
         writer_plugins: writer_plugins,
         reader_plugins: reader_plugins,
         observer_plugins: observer_plugins,
@@ -40,7 +40,7 @@ describe Observed::Builder do
         true
       end
       def report(tag, time, data)
-        text = format.call tag, time, data, Observed::HashFetcher.new(data)
+        text = format.call tag, time, data, Observed::Hash::Fetcher.new(data)
         STDOUT.puts text
       end
     end
@@ -51,7 +51,7 @@ describe Observed::Builder do
     stdout = Class.new(Observed::Writer) do
       attribute :format
       def write(tag, time, data)
-        text = format.call tag, time, data, Observed::HashFetcher.new(data)
+        text = format.call tag, time, data, Observed::Hash::Fetcher.new(data)
         STDOUT.puts text
       end
     end

@@ -1,5 +1,5 @@
 require 'observed/version'
-require 'observed/builder'
+require 'observed/config_builder'
 require 'observed/system'
 require 'observed/config_dsl'
 require 'forwardable'
@@ -27,7 +27,7 @@ module Observed
   extend Forwardable
 
   @@sys = Observed::System.new
-  @@observed = Observed::ConfigDSL.new(builder: Observed::Builder.new(system: @@sys))
+  @@observed = Observed::ConfigDSL.new(builder: Observed::ConfigBuilder.new(system: @@sys))
 
   def_delegators :@@observed, :require_relative, :observe, :report, :write, :read, :config, :load!, :working_directory
 
@@ -35,7 +35,7 @@ module Observed
   # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
   # We have to reset its state via this `init!` method before building next configurations after the first one.
   def init!
-    @@observed = Observed::ConfigDSL.new(builder: Observed::Builder.new(system: @@sys))
+    @@observed = Observed::ConfigDSL.new(builder: Observed::ConfigBuilder.new(system: @@sys))
   end
 
   def configure(*args)

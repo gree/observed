@@ -3,11 +3,11 @@ require 'observed/config_dsl'
 require 'observed/observer'
 require 'observed/reporter'
 require 'observed/reporter/regexp_matching'
-require 'observed/builder'
+require 'observed/config_builder'
 
 describe Observed::ConfigDSL do
   subject {
-    Observed::ConfigDSL.new(builder: Observed::Builder.new(
+    Observed::ConfigDSL.new(builder: Observed::ConfigBuilder.new(
         observer_plugins: observer_plugins,
         reporter_plugins: reporter_plugins,
         system: sys
