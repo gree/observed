@@ -12,8 +12,8 @@ module Observed
       attribute :format, default: -> tag, time, data { "#{Time.at(time)} #{tag} #{data}" }
 
       # @param [String] tag
-      # @param [Fixnum] time
-      # @param [Observed::Data] data
+      # @param [Time] time
+      # @param [Hash] data
       def report(tag, time, data)
         num_params = format.parameters.size
         formatted_data = case num_params
