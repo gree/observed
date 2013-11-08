@@ -1,6 +1,7 @@
-# Observed::Clockwork
+# observed-clockwork
 
-TODO: Write a gem description
+observed-clockwork is an integration of Observed and Clockwork.
+In the integration, we can define jobs in Observed and schedule those to run by Clockwork.
 
 ## Installation
 
@@ -20,17 +21,28 @@ Or install it yourself as:
 
 ### With Bundler
 
-    $ bundle install --binstubs && bin/observed-clockwork examples/observed-clockwork/observed.conf examples/observed-clockwork/clockwork.rb
+    $ bundle install
+    $ bundle exec clockwork examples/clockwork/clockwork.rb
 
-Or:
+    Or with daemonizing:
 
-    $ bundle install --binstubs && cd examples/clockwork && ../../bin/clockwork clockwork.rb
+    $ bundle install (Note that we need to add the dependency to 'daemons' gem in our Gemfile or gemspec)
+    $ bundle exec clockworkd -c examples/clockwork/clockwork.rb -l start
+    $ tail -f tmp/clockworkd.clockwork.output
+    $ bundle exec clockworkd -c examples/clockwork/clockwork.rb -l stop
 
 ### Without Bundler
 
     $ gem install observed-clockwork
     $ clockwork clockwork.rb
 
+    Or with daemonizing:
+
+    $ gem install observed-clockwork
+    $ gem install daemons
+    $ clockworkd -c examples/clockwork/clockwork.rb -l start
+    $ tail -f tmp/clockworkd.clockwork.output
+    $ clockworkd -c examples/clockwork/clockwork.rb -l stop
 
 ## Contributing
 

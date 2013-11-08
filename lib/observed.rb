@@ -2,6 +2,7 @@ require 'observed/version'
 require 'observed/config_builder'
 require 'observed/system'
 require 'observed/config_dsl'
+require 'observed/builtin_plugins'
 require 'forwardable'
 
 # The module to provide DSL to describe Observed configuration, intended to be used by including to Ruby's `main` object
@@ -38,6 +39,11 @@ module Observed
       @observed = Observed::ConfigDSL.new(builder: config_builder)
     end
 
+    def run(tag=nil)
+      @sys.config = self.config
+      @sys.run(tag)
+    end
+
     def configure(*args)
       @observed.send :configure, *args
     end
@@ -63,7 +69,7 @@ module Observed
 
   extend Forwardable
 
-  def_delegators :@@singleton, :init!, :configure, :require_relative, :observe, :report, :write, :read, :config,
+  def_delegators :@@singleton, :run, :init!, :configure, :require_relative, :observe, :report, :write, :read, :config,
                  :load!, :working_directory
 
   extend self

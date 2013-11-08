@@ -24,4 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "fakefs"
   spec.add_development_dependency "mocha"
   spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "cucumber"
+  spec.add_development_dependency "aruba"
 end

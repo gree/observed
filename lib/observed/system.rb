@@ -31,7 +31,7 @@ module Observed
     def run(observation_name=nil)
 
       if observation_name
-        observers_to_run = observers.reject { |name, _| name != observation_name }
+        observers_to_run = observers.reject { |o| o.tag != observation_name }
         fail "No configuration found for observation name '#{observation_name}'" if observers_to_run.empty?
       else
         observers_to_run = observers

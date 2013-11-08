@@ -23,19 +23,19 @@ module Observed
     end
 
     def writer_plugins
-      @writer_plugins ||= select_named_plugins_of(Observed::Writer)
+      @writer_plugins || select_named_plugins_of(Observed::Writer)
     end
 
     def reader_plugins
-      @reader_plugins ||= select_named_plugins_of(Observed::Reader)
+      @reader_plugins || select_named_plugins_of(Observed::Reader)
     end
 
     def observer_plugins
-      @observer_plugins ||= select_named_plugins_of(Observed::Observer)
+      @observer_plugins || select_named_plugins_of(Observed::Observer)
     end
 
     def reporter_plugins
-      @reporter_plugins ||= select_named_plugins_of(Observed::Reporter)
+      @reporter_plugins || select_named_plugins_of(Observed::Reporter)
     end
 
     def select_named_plugins_of(klass)
