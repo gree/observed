@@ -152,10 +152,18 @@ Now, run:
 
 ```
 $ clockwork clockwork.rb
+
+I, [2013-11-08T23:39:53.999484 #44285]  INFO -- : Starting clock for 1 events: [ google.health ]
+I, [2013-11-08T23:39:53.999555 #44285]  INFO -- : Triggering 'google.health'
+Google is healthy! (^o^)
+Google is healthy! (^o^)
+Google is healthy! (^o^)
+...
 ```
 
-Then you will see turn-around-time and status(`success` or `error`) for each poll to your HTTP service running on
-`http://localhost:3000`.
+You did it!
+You just saw that Google's healthiness is printed to the standard output every 10 seconds.
+In other words, you did observed Google's healthiness with easily with Observed.
 
 The example described here is fairly simple and would look useless at a glance, but remember that Observed is just a
 framework.
