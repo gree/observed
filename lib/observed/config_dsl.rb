@@ -23,6 +23,8 @@ module Observed
       args[:builder] || fail("The key :builder must exist in #{args}")
       @builder = args[:builder]
 
+      @logger = args[:logger] if args[:logger]
+
       configure(args)
     end
 

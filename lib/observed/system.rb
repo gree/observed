@@ -4,8 +4,9 @@ require 'observed/reporter'
 module Observed
   class System
 
-    def initialize(config=nil)
-      @config = config if config
+    def initialize(args={})
+      @config = args[:config] if args[:config]
+      @logger = args[:logger] if args[:logger]
     end
 
     def config=(config)

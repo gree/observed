@@ -16,6 +16,7 @@ module Observed
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
       @system = args[:system] || fail("The key :system must be in #{args}")
+      @logger = args[:logger] || Logger.new(STDOUT, Logger::DEBUG)
     end
 
     def system
@@ -67,7 +68,7 @@ module Observed
                  else
                    via = args[:via] || args[:using]
                    with = args[:with] || args[:which] || {}
-                   with = with.merge({tag_pattern: tag_pattern})
+                   with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern})
                    plugin = reporter_plugins[via] ||
                        fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{reporter_plugins}"|)
                    plugin.new(with)
@@ -101,7 +102,7 @@ module Observed
                    with = args[:with] || args[:which] || {}
                    plugin = observer_plugins[via] ||
                        fail(RuntimeError, %Q|The observer plugin named "#{via}" is not found in "#{observer_plugins}"|)
-                   plugin.new(with.merge(tag: tag, system: system))
+                   plugin.new(({logger: @logger}).merge(with).merge(tag: tag, system: system))
                  end
       observers << observer
       observer
@@ -114,6 +115,7 @@ module Observed
                when String
                  plugin = writer_plugins[to] ||
                      fail(RuntimeError, %Q|The writer plugin named "#{to}" is not found in "#{writer_plugins}"|)
+                 with = ({logger: @logger}).merge(with)
                  plugin.new(with)
                when Observed::Writer
                  to
@@ -132,6 +134,7 @@ module Observed
       reader = case from
                when String
                  plugin = reader_plugins[from] || fail(RuntimeError, %Q|The reader plugin named "#{from}" is not found in "#{reader_plugins}"|)
+                 with = ({logger: @logger}).merge(with)
                  plugin.new(with)
                when Observed::Reader
                  from

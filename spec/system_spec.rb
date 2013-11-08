@@ -1,10 +1,12 @@
 require 'spec_helper'
 
+require 'logger'
+
 require 'observed/system'
 
 describe Observed::System do
   subject {
-    described_class.new(the_config)
+    Observed::System.new(the_config)
   }
 
   context 'with reporters configured' do
@@ -12,7 +14,7 @@ describe Observed::System do
     let(:the_config) {
       s = stub('foo')
       s.stubs(reporters: [reporter])
-      s
+      { config: s, logger: Logger.new(STDOUT, Logger::DEBUG) }
     }
 
     let(:reporter) {
@@ -54,6 +56,7 @@ describe Observed::System do
       c = stub('config')
       c.stubs(observers: observers)
       c
+      { config: c, logger: Logger.new(STDOUT, Logger::DEBUG) }
     }
 
     context 'when there is no matching observer for a tag' do
