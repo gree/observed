@@ -1,4 +1,5 @@
 require 'observed/reporter'
+require 'observed/reporter/regexp_matching'
 require 'observed/gauge/version'
 require 'logger'
 require 'rrd'
@@ -6,6 +7,11 @@ require 'rrd'
 module Observed
   module Plugins
     class Gauge < Observed::Reporter
+
+      plugin_name 'gauge'
+
+      include Observed::Reporter::RegexpMatching
+
       attribute :tag
       attribute :key_path
       attribute :coerce, default: ->(data){ data }
@@ -22,10 +28,6 @@ module Observed
         unless fetch_value_for_key_path(rewrote, key_path).nan?
           system.report(self.tag, rewrote)
         end
-      end
-
-      def self.plugin_name
-        'gauge'
       end
 
       def prepare_rrd(args)
