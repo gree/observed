@@ -83,6 +83,8 @@ Or `git clone` the sources and install by using rake:
 
 ## Usage
 
+Just for the purpose of illustration, _let Observed observe and report the healthiness of Google_.
+
 Observed itself is just a framework and doesn't support any service by default.
 Now, just for example, let's assume that we want Observed to poll our HTTP-based webs service and report the result and
 show average response time.
@@ -101,6 +103,8 @@ Observed with cron) but we proceed with Clockwork just for example.
 With `clockwork.rb` like:
 
 ```ruby
+require 'pathname'
+
 require 'clockwork'
 require 'observed/clockwork'
 
@@ -109,28 +113,34 @@ include Clockwork
 # Below two lines are specific to Observed's Clockwork support.
 # Others lines are just standard `clockwork.rb`
 include Observed::Clockwork
-observed :config_file => 'observed.conf'
 
-every(10.seconds, 'myservice.http')
+the_dir = Pathname.new(File.dirname(__FILE__))
+
+register_observed_handler :config_file => the_dir + 'observed.rb'
+
+every(10.seconds, 'google.health')
 ```
 
-With `observed.conf` like:
+With `observed.rb` like:
 
 ```ruby
-require 'observed/builtin_plugins'
 require 'observed/http'
 
-observe 'myservice.http', {
-  plugin: 'http',
-  method: 'get',
-  url: 'http://localhost:3000',
-  timeout_in_milliseconds: 1000
+observe 'google.health', via: 'http', with: {
+    method: 'get',
+    url: 'http://www.google.co.jp/'
 }
 
-match /myservice\..+/, plugin: 'stdout'
-
-match /myservice\.http/, plugin: 'builtin_avg', tag: 'myservice.http.avg', time_window: 60 * 1000
-match /myservice\.http\.avg/, plugin: 'stdout'
+report /google.health/, via: 'stdout', with: {
+    format: -> tag, time, data {
+      case data[:status]
+      when :success
+        'Google is healthy! (^o^)'
+      else
+        'Google is unhealthy! (;_;)'
+      end
+    }
+}
 ```
 
 As you see, `observed.conf` is just a Ruby source to describe Observed's configuration.
