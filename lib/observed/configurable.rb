@@ -48,10 +48,6 @@ module Observed
 
     private
 
-    def default_value_for(name)
-      self.class.defaults[name]
-    end
-
     def fail_for_not_configured_parameter(name)
       fail NotConfiguredError.new("The parameter `#{name}` is not configured. attributes=#{@attributes}, defaults=#{self.class.defaults}")
     end
