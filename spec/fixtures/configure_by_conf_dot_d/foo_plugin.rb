@@ -13,8 +13,6 @@ module OneshotSpec
       Logger.new(STDOUT)
     end
 
-    def self.plugin_name
-      'foo'
-    end
+    plugin_name 'foo'
   end
 end
