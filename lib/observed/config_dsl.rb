@@ -71,13 +71,5 @@ module Observed
     def logger
       @logger ||= Logger.new(STDOUT)
     end
-
-    def inputs
-      @observations ||= {}
-    end
-
-    def outputs
-      @reporters ||= {}
-    end
   end
 end
