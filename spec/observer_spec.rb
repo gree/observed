@@ -3,6 +3,16 @@ require 'observed/observer'
 
 describe Observed::Observer do
 
+  subject {
+    described_class.new(tag: 'the_tag', system: sys)
+  }
+
+  let(:sys) { mock('system') }
+
+  it 'fails when the method `observe` is not overrode' do
+    expect { subject.observe }.to raise_error
+  end
+
   describe 'attribute' do
 
     it 'can be given by constructor parameters' do
