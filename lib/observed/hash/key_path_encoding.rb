@@ -18,6 +18,8 @@ module Observed
                          key_path
                        when String
                          key_path.split(".")
+                       when Symbol
+                         key_path
                        end
         key_str = first.to_s
         key_sym = first.intern
@@ -32,6 +34,9 @@ module Observed
           child = hash[key]
           if child
             at_key_path_on_hash(child, rest, options, &block)
+          elsif create_if_missing
+            hash[key] = created = {}
+            at_key_path_on_hash(created, rest, options, &block)
           end
         end
       end
