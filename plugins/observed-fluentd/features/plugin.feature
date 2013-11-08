@@ -4,26 +4,28 @@ Feature: Receives Observed's input and send it to Fluentd
 
   I want to configure Observed to use observed-fluentd plugin
 
-  Scenario: Send data to fluentd periodically
-    Given a file named "observed.conf" with:
+  Scenario: Write configuration files for Observed and Fluentd, then run Fluentd, and then run Observed
+    Given a file named "test.rb" with:
     """
-    require 'observed/builtin_plugins'
+    require 'observed'
     require 'observed/http'
     require 'observed/fluentd'
 
-    observe 'myservice', {
-      plugin: 'http',
+    include Observed
+
+    observe 'myservice', via: 'http', with: {
       method: 'get',
-      url: 'http://localhost/',
+      url: 'http://google.com/',
       timeout_in_milliseconds: 3000,
     }
 
-    match /myservice.*/, {
-      plugin: 'fluentd',
+    report /myservice.*/, via: 'fluentd', with: {
       host: 'localhost',
       port: 24224,
       tag: 'debug.myservice'
     }
+
+    run 'myservice'
     """
     Given a file named "fluent.conf" with:
     """
@@ -39,25 +41,19 @@ Feature: Receives Observed's input and send it to Fluentd
       flush_interval 1s
     </match>
     """
-    Given a file named "clockwork.rb" with:
-    """
-    require 'clockwork'
-    require 'observed/clockwork'
-
-    include Clockwork
-    include Observed::Clockwork
-
-    observed :config_file => 'tmp/aruba/observed.conf'
-
-    every(1.seconds, 'myservice')
-    """
     When I run `pwd`
     When I start my daemon with "fluentd -c tmp/aruba/fluent.conf"
-    When I start my daemon with "clockwork tmp/aruba/clockwork.rb"
+    When I run `sleep 3`
+    When I run `ruby test.rb`
     Then a daemon called "fluentd" should be running
-    Then a daemon called "clockwork" should be running
+    When I run `sleep 3`
     When I run `cat fluent.out.foo_0.log`
     Then the output should contain:
     """
     elapsed_time
     """
+    Then the output should contain:
+    """
+    debug.myservice
+    """
+
