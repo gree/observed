@@ -53,9 +53,7 @@ module Observed
         @logger ||= Logger.new(STDOUT)
       end
 
-      def self.plugin_name
-        'http'
-      end
+      plugin_name 'http'
 
     end
   end
