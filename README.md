@@ -112,11 +112,11 @@ require 'observed/clockwork'
 
 include Clockwork
 
+the_dir = Pathname.new(File.dirname(__FILE__))
+
 # Below two lines are specific to Observed's Clockwork support.
 # Others lines are just standard `clockwork.rb`
 include Observed::Clockwork
-
-the_dir = Pathname.new(File.dirname(__FILE__))
 
 register_observed_handler :config_file => the_dir + 'observed.rb'
 
@@ -145,7 +145,7 @@ report /google.health/, via: 'stdout', with: {
 }
 ```
 
-As you see, `observed.conf` is just a Ruby source to describe Observed's configuration.
+As you see, `observed.rb` is just a Ruby source to describe Observed's configuration.
 You can rely on Ruby's language features, gems, or etc.
 
 We have finished configuring Observed.
