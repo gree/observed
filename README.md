@@ -175,9 +175,11 @@ result to other services. Things like monitoring, watching, alerting can be done
 ## Documentation
 
 Observed is documented with [YARD](https://github.com/lsegal/yard).
-The documentation is not currently hosted on any server and we have to build the document before reading it.
 
-To generate the document, install YARD:
+The latest documentation for the master branch of Observed [is available at rubydoc.info](http://rubydoc.info/github/gree/observed).
+
+You can also generate the document locally.
+To do that, install YARD:
 
 ```
 $ gem install yard
