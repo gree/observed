@@ -1,6 +1,6 @@
 # [Observed](https://github.com/gree/observed)
 
-[![Coverage Status](https://coveralls.io/repos/gree/observed/badge.png?branch=master)](https://coveralls.io/r/gree/observed?branch=master)
+[![Build Status](https://travis-ci.org/gree/observed.png?branch=master)](https://travis-ci.org/gree/observed) [![Coverage Status](https://coveralls.io/repos/gree/observed/badge.png?branch=master)](https://coveralls.io/r/gree/observed?branch=master) [![Code Climate](https://codeclimate.com/github/gree/observed.png)](https://codeclimate.com/github/gree/observed)
 
 A polling framework
 
