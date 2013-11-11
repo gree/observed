@@ -1,4 +1,5 @@
 require 'observed/http/version'
+require 'observed/observer'
 require 'observed/observer_helpers/timer'
 require 'timeout'
 require 'net/http'
