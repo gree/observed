@@ -1,8 +1,8 @@
-# Observed
+# [Observed](https://github.com/gree/observed)
 
 A polling framework
 
-Observed is a framework for polling various applications/middlewares/services running locally or on remote servers like
+[Observed](https://github.com/gree/observed) is a framework for polling various applications/middlewares/services running locally or on remote servers like
 ones in your production environment.
 It is designed with extensibility in mind.
 
@@ -197,7 +197,7 @@ $ open doc/index.html
 
 ## Contributing
 
-1.  Fork it
+1.  [Fork it](https://github.com/gree/observed)
 2.  Create your feature branch (`git checkout -b my-new-feature`)
 3.  Commit your changes (`git commit -am 'Add some feature'`)
 4.  Push to the branch (`git push origin my-new-feature`)
