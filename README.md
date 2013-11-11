@@ -1,5 +1,7 @@
 # [Observed](https://github.com/gree/observed)
 
+[![Coverage Status](https://coveralls.io/repos/gree/observed/badge.png?branch=master)](https://coveralls.io/r/gree/observed?branch=master)
+
 A polling framework
 
 [Observed](https://github.com/gree/observed) is a framework for polling various applications/middlewares/services running locally or on remote servers like
