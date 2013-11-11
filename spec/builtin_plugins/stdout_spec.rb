@@ -11,7 +11,11 @@ describe Observed::BuiltinPlugins::Stdout do
   }
 
   let(:config) {
-    { tag_pattern: /foo\..+/, format: formatter }
+    { tag_pattern: /foo\..+/, format: formatter, output: output }
+  }
+
+  let(:output) {
+    mock('output')
   }
 
   context 'with a specific formatter' do
@@ -22,7 +26,7 @@ describe Observed::BuiltinPlugins::Stdout do
 
     it 'reports the formatted data to the stdout' do
       time = Time.now
-      STDOUT.expects(:puts).with("foo #{time.to_i} 1 2")
+      output.expects(:puts).with("foo #{time.to_i} 1 2")
       expect { subject.report('foo', time, {foo: 1, bar: {baz: 2}}) }.to_not raise_error
     end
 
@@ -36,7 +40,7 @@ describe Observed::BuiltinPlugins::Stdout do
 
     it 'reports the data formatted by the default formatter to the stdout' do
       time = Time.now
-      STDOUT.expects(:puts).with("#{time.to_s} foo {:foo=>1}")
+      output.expects(:puts).with("#{time.to_s} foo {:foo=>1}")
       expect { subject.report('foo', time, {foo: 1}) }.to_not raise_error
     end
 
