@@ -1,6 +1,9 @@
 require 'fakefs/spec_helpers'
 require 'rspec'
 
+require 'coveralls'
+Coveralls.wear!
+
 Dir["#{File.expand_path('..',  __FILE__)}/support/**/*.rb"].each { |f| require f }
 
 puts "Please do not update/create files while tests are running."
