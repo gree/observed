@@ -11,6 +11,31 @@ module ConfigurableSpec
 
     default :bar => 345
   end
+
+  module Preset
+    include Observed::Configurable
+
+    attribute :preset, default: 123
+  end
+
+  module PresetInherited
+    include Observed::Configurable
+    include Preset
+  end
+
+  class ClassWithPreset
+    include Observed::Configurable
+    include Preset
+
+    attribute :foo, default: 234
+  end
+
+  class ClassWithPresetInherited
+    include Observed::Configurable
+    include PresetInherited
+
+    attribute :foo, default: 234
+  end
 end
 
 describe Observed::Configurable do
@@ -60,6 +85,32 @@ describe Observed::Configurable do
       }
       it_behaves_like 'values are set'
     end
+  end
+
+  shared_examples_for 'a preset provider' do
+    it 'provides a preset of attributes' do
+      expect(subject.foo).to eq(234)
+      expect(subject.preset).to eq(123)
+
+      subject.configure foo: 1, preset: 2
+
+      expect(subject.foo).to eq(1)
+      expect(subject.preset).to eq(2)
+    end
+  end
+
+  context 'when included in a module' do
+    subject {
+      ConfigurableSpec::ClassWithPreset.new
+    }
+    it_behaves_like 'a preset provider'
+  end
+
+  context 'when included via a intermediate module' do
+    subject {
+      ConfigurableSpec::ClassWithPresetInherited.new
+    }
+    it_behaves_like 'a preset provider'
   end
 
 end

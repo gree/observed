@@ -38,11 +38,46 @@ module Observed
 
     end
 
+    module ModuleMethods
+      # @param [String|Symbol] name
+      def attribute(name, options={})
+        @attributes ||= {}
+        @attributes = @attributes.merge(name => options)
+      end
+
+      def attributes
+        @attributes ||
+          fail(<<EOS
+#{self} includes Observed::Configurable. Though, no attributes are configured for #{self}.
+We don't need to include Observed::Configurable, or it might be a bug?
+EOS
+              )
+      end
+
+      def included(klass)
+        ensure_configurable klass
+
+        attributes.each do |name, options|
+          klass.attribute name, options
+        end
+      end
+
+      def ensure_configurable(klass)
+        unless klass.include? Configurable
+          fail "The class #{klass} must include Observed::Configurable to include #{self}"
+        end
+      end
+    end
+
     class NotConfiguredError < RuntimeError; end
 
     class << self
       def included(klass)
-        klass.extend ClassMethods
+        if klass.is_a? Class
+          klass.extend ClassMethods
+        else
+          klass.extend ModuleMethods
+        end
       end
     end
 
