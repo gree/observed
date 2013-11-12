@@ -1,5 +1,6 @@
 require 'observed/configurable'
 require 'observed/pluggable'
+require 'observed/logging'
 
 module Observed
 
