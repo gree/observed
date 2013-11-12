@@ -9,19 +9,19 @@ module Observed
     # @example
     # class YourObserver < Observed::Reporter
     #   include Observed::Reporter::Configurable
-    #   include Observed::Reporter::FormattedReporting
+    #   include Observed::Reporter::ReportFormatting
     #
     #   attribute :format, default: -> tag, time, data { "#{Time.at(time)} #{tag} #{data}" }
     #
     #   def report(tag, time, data)
+    #     formatted_data = format_report(tag, time, data)
     #     # The output of your choice
     #   end
-    #
-    #   include Observed::Reporter::FormattedReporting
     # end
     #
     # observer = YourObserver.new(format: -> tag, time, data { "The data being reported: #{tag} #{time} #{data}" })
     # observer.report('test', Time.now, {data: 1})
+    # #=> outputs "#{Time.at(Time.now)} test {:data=>1}"
     module ReportFormatting
 
       include Observed::Configurable
