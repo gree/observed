@@ -9,3 +9,4 @@ matrix:
   exclude:
     - rvm: 1.9.3
       jdk: openjdk7
+script: ./run-integration-tests

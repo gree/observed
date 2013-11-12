@@ -1,0 +1,74 @@
+#!/bin/bash --login
+
+# '--login' is needed to deal with the following warning otherwise emitted by rvm:
+#   You need to change your terminal emulator preferences to allow login shell.
+#   Sometimes it is required to use `/bin/bash --login` as the command.
+#   Please visit https://rvm.io/integration/gnome-terminal/ for a example.
+
+rvm gemset create observed-test
+rvm gemset use observed-test
+
+observed_dir=`dirname $0`
+plugins_dir=$observed_dir/plugins
+integrations_dir=$obseved/integrations
+integrations="clockwork"
+plugins="http fluentd gauge"
+
+cd $observed_dir
+
+dirs=$observed_dir
+
+for integration in $integrations
+do
+  dirs="$dirs $integrations_dir/$integration"
+done
+
+for plugin in $plugins
+do
+  dirs="$dirs $plugins_dir/$plugin"
+done
+
+echo $dirs
+
+function quit_on_failure {
+  if [[ $? -ne 0 ]]; then
+    quit 1
+  fi
+}
+
+function quit {
+  rvm --force gemset delete observed-test
+  if [[ $1 == "" ]]; then
+    exit 0
+  fi
+  exit $1
+}
+
+for target in $dirs
+do
+  echo Target: $target
+  cd $target
+  bundle install
+  if [[ $? -ne 0 ]]; then
+    bundle update
+  fi
+  if [ -d spec ]
+  then
+    bundle exec rspec
+  fi
+  quit_on_failure
+
+  if [ -d features ]
+  then
+    bundle exec cucumber
+  fi
+  quit_on_failure
+
+  rake install
+  if [[ $? -ne 0 ]]; then
+    gem install pkg/*.gem
+  fi
+
+done
+
+quit
