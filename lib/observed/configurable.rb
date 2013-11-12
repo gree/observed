@@ -14,11 +14,23 @@ module Observed
       self
     end
 
+    # @param [String|Symbol] name
+    def has_attribute_value?(name)
+      !! get_attribute_value(name)
+    end
+
+    # @param [String|Symbol] name
+    # @return [Object] In order of precedence, the value of the instance variable named `"@" + name`,
+    #                  or the value `@attributes[name]`, or the default value for the attribute named `name`
+    def get_attribute_value(name)
+      instance_variable_get("@#{name.to_s}") || @attributes[name] || self.class.defaults[name]
+    end
+
     module ClassMethods
       # @param [String|Symbol] name
       def attribute(name, options={})
         define_method(name) do
-          instance_variable_get("@#{name.to_s}") || @attributes[name] || self.class.defaults[name] || fail_for_not_configured_parameter(name)
+          get_attribute_value(name) || fail_for_not_configured_parameter(name)
         end
         default_value =  options && options[:default]
         default name => default_value if default_value

@@ -18,10 +18,10 @@ module Observed
           r[:elapsed_time] = elapsed_time
           r
         rescue Timeout::Error => e
-          logger.debug "Handled the error but logging it just for your info: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
+          log_debug "Handled the error but logging it just for your info: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
           { status: :error, error: {message: 'Timed out.'}, timed_out: true }
         rescue => e
-          logger.error "Handled the error: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
+          log_error "Handled the error: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
           { status: :error, error: {message: e.message} }
         end
       end

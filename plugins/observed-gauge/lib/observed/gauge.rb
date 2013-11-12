@@ -1,3 +1,4 @@
+require 'observed/logging'
 require 'observed/reporter'
 require 'observed/reporter/regexp_matching'
 require 'observed/gauge/version'
@@ -10,6 +11,7 @@ module Observed
 
       plugin_name 'gauge'
 
+      include Observed::Logging
       include Observed::Reporter::RegexpMatching
 
       attribute :tag
@@ -32,13 +34,13 @@ module Observed
 
       def prepare_rrd(args)
         start = args[:start]
-        logger.debug "Creating a rrd file named '#{args[:rrd]}' with options {:start => #{start}}"
+        log_debug "Creating a rrd file named '#{args[:rrd]}' with options {:start => #{start}}"
         result = RRD::Builder.new(args[:rrd], start: start, step: step.seconds).tap do |builder|
           builder.datasource data_source, :type => :gauge, :heartbeat => period.seconds, :min => 0, :max => :unlimited
           builder.archive :average, :every => period.seconds, :during => period.seconds
           builder.save
         end
-        logger.debug "Builder#save returned: #{result.inspect}"
+        log_debug "Builder#save returned: #{result.inspect}"
       end
 
       private
@@ -101,16 +103,12 @@ module Observed
           prepare_rrd(rrd: rrd_path, start: t)
         end
 
-        logger.debug "Updating the data source '#{data_source}' with the value #{value} with timestamp #{t}"
+        log_debug "Updating the data source '#{data_source}' with the value #{value} with timestamp #{t}"
         rrd.update t, value
 
-        logger.debug rrd.fetch!(:average)[-2..-1]
+        log_debug rrd.fetch!(:average)[-2..-1]
 
         rrd.fetch(:average)[-2..-1].first.last
-      end
-
-      def logger
-        @logger ||= Logger.new(STDOUT)
       end
     end
   end
