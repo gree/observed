@@ -1,69 +1,45 @@
-# [Observed](https://github.com/gree/observed)
+# Observed
 
 [![Build Status](https://travis-ci.org/gree/observed.png?branch=master)](https://travis-ci.org/gree/observed) [![Coverage Status](https://coveralls.io/repos/gree/observed/badge.png?branch=master)](https://coveralls.io/r/gree/observed?branch=master) [![Code Climate](https://codeclimate.com/github/gree/observed.png)](https://codeclimate.com/github/gree/observed)
 
-A polling framework
-
-[Observed](https://github.com/gree/observed) is a framework for polling various applications/middlewares/services running locally or on remote servers like
-ones in your production environment.
-It is designed with extensibility in mind.
+Observed is a highly extensible framework for polling applications, middlewares and services running locally or on remote servers.
 
 -----
 
-Observed polls services, optionally transforms the results, and then redirects the results to another services.
-Observed is open for extension which means that it is extensible via plugins to support add more services and transformations.
+Observed allows you to:
 
-To be clear, you can use Observed to:
+1.  poll server(s),
+2.  optionally modify the response result,
+3.  pass the result on to other services or trigger other tasks
 
-1.  poll something,
-2.  optionally transform the result,
-3.  pass the result to another services or trigger something
+All the above 3 operations are extensible via plugins and can be configured via configuration files.
 
-All the three things mentioned above can be extended via plugins and configured via configuration files.
-
-There are known plugins for:
+There are plugins available for:
 
 -  Polling HTTP-based services to detect failures and performance degradation
 -  Sending observed data to Fluentd
--  (More to come)
 
-Observed has has a very small code-base (only a few hundreds of lines) and it should not be too hard to understand the
-code and develop plugins.
+Additional plugins will be released in the future.
 
-Observed's extensible design through plugins is inspired by other Ruby products like Fluentd,
-and having knowledge of other Ruby products may help understanding Observed.
-(But remember that Observed is yet a highly ambitioned and experimental framework. Observed's code has more space to
-improve than other great Ruby products.)
+Observed has has a very small code-base (only a few hundred lines) which makes reading and understanding it's source code and developing plugins for it a relatively simple task.
+
+Observed's extensible design through plugins is inspired by other Ruby projects such as Fluentd. People familiar with other Ruby products should feel right at home with Observed. As of now it is a highly ambitious and experimental framework with big potential for growth and improvements.
 
 Observed is (and its plugins should be) stateless.
-Specially for Observed, this means that it should work similarly when it is ran as a daemon or a _oneshot_ application like
-a regular cron job as states are stored somewhere outside of the application instance.
+This means that it should work in the same manner whether it is run as a daemon or a _oneshot_ application like
+a regular cron job, as states should be stored outside of the application instance with regards to Observed.
 
-Observed is intended to work on Ruby 1.9.3 but should work on Ruby 2.0+ too.
+Observed is intended to be run on Ruby 1.9.3 but should work on Ruby 2.0+ too.
 
-## What it is not
-
-Observed is:
-
--  Not a framework for creating Web-based polls which are voted. It's all about [polling (computer science)](http://en.wikipedia.org/wiki/Polling_\(computer_science\))
--  Not a monitoring and reporting tool like Ganglia, New Relic, or etc.
-   But Observed can be used to gather simple metrics via its plugins, and it can pass those metrics to an another tool to
-   achieve any serious monitoring or reporting.
--  Not a log collector like Fluentd.
-   Observed can be used to emit event logs to the log collector of your choice, but it does not replace or act like that.
--  Not a [job scheduler](http://en.wikipedia.org/wiki/Job_scheduler) like cron, though it can be integrated to those schedulers to make them trigger Observed to do the
-   job.
+## Observed is not:
+-  a monitoring and reporting tool such as New Relic etc. However, Observed can be used for collecting simple metrics via plugins, then pass them on to another full-fledged monitoring or reporting tool.
+-  a log collector like Fluentd. Observed can be used to emit event logs to the log collector of your choice, but it does not replace the log collector.
+-  a [job scheduler](http://en.wikipedia.org/wiki/Job_scheduler) (e.g. cron), though it can be integrated with job schedulers to make them trigger Observed to perform jobs.
 
 ## Similar products
 
-- [vacuumetrix](https://github.com/99designs/vacuumetrix) gets metrics from various sources and puts those to various
-  outputs like Graphite, Ganglia, etc.
-  On the other hand, Observed scope itself to be used just for `polling` and also it outputs to not only monitoring
-  systems but any system.
-- [metrics-sampler](https://github.com/dimovelev/metrics-sampler) is a java program which queries metrics from various
-  sources and sends them to outputs like the console or Graphite. It supports inputs such as JMX, JDBC, apache-status,
-  Oracle NoSQL, Redis, webmethods, or regular process which is runnable via the command-line and is able to communiate
-  via standard input/output.
+- [vacuumetrix](https://github.com/99designs/vacuumetrix) - Collects metrics from various sources and outputs them to various destinations (e.g Graphite). Observed only covers the `polling` part, but can output to not just monitoring systems but any system.
+- [metrics-sampler](https://github.com/dimovelev/metrics-sampler) - A Java program which queries metrics from various sources and outputs to various destinations such as Graphite or consoles. It supports various methods of input such as JMX, JDBC, apache-status, Oracle NoSQL, Redis, web API, or regular processes which are executable via the command-line, and is able to communicate via standard input/output.
 
 ## Installation
 
@@ -75,7 +51,7 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
+Or install it yourself with:
 
     $ gem install observed
 
@@ -85,24 +61,23 @@ Or `git clone` the sources and install by using rake:
 
 ## Usage
 
-Just for the purpose of illustration, _let Observed observe and report the healthiness of Google_.
+Simple example: _use Observed to observe and report the healthiness of Google_.
 
-Observed itself is just a framework and doesn't support any service by default.
-Now, just for example, let's assume that we want Observed to poll our HTTP-based webs service and report the result and
-show average response time.
-We start with installing some observed plugins:
+Assume that we want Observed to poll a HTTP-based web service (Google) and report the results.
+
+Since Observed by itself is just a framework and by default does not have built-in support for any service, we start by installing some Observed plugins:
 
     $ gem install observed
     $ gem install observed-clockwork
     $ gem install observed-http
 
-In this case, we use observed-clockwork to trigger polls through [Clockwork](https://github.com/tomykaira/clockwork).
-observed-clockwork is a library intended to use in Clockwork's configuration
-file. Clockwork is a scheduler process made with Ruby, which is intended to replace cron.
-Note that we can just use cron which is supported via observed-cron plugin(or even without the plugin, it is breeze to use
-Observed with cron) but we proceed with Clockwork just for example.
+For this example, we will use observed-clockwork to trigger polls through [Clockwork](https://github.com/tomykaira/clockwork).
 
-With `clockwork.rb` like:
+observed-clockwork is a library to be used with Clockwork's configuration file. Clockwork is a cron replacement for a scheduler process that is written in Ruby.
+
+Note that we can also use cron, which is supported via observed-cron plugin (even without the plugin it is really simple to use Observed with cron) but we will use Clockwork for this example.
+
+Edit the contents of `clockwork.rb`:
 
 ```ruby
 require 'pathname'
@@ -114,8 +89,7 @@ include Clockwork
 
 the_dir = Pathname.new(File.dirname(__FILE__))
 
-# Below two lines are specific to Observed's Clockwork support.
-# Others lines are just standard `clockwork.rb`
+# The following two lines are specific to Observed's Clockwork support.
 include Observed::Clockwork
 
 register_observed_handler :config_file => the_dir + 'observed.rb'
@@ -123,7 +97,7 @@ register_observed_handler :config_file => the_dir + 'observed.rb'
 every(10.seconds, 'google.health')
 ```
 
-With `observed.rb` like:
+Edit the contents of `observed.rb` as follows:
 
 ```ruby
 require 'observed/http'
@@ -145,10 +119,10 @@ report /google.health/, via: 'stdout', with: {
 }
 ```
 
-As you see, `observed.rb` is just a Ruby source to describe Observed's configuration.
-You can rely on Ruby's language features, gems, or etc.
+As you see, `observed.rb` is just a Ruby source file that describes Observed's configuration.
+You can use Ruby language's features, gems, etc.
 
-We have finished configuring Observed.
+That sums up the configuration part of things.
 
 Now, run:
 
@@ -163,16 +137,13 @@ Google is healthy! (^o^)
 ...
 ```
 
-You did it!
-You just saw that Google's healthiness is printed to the standard output every 10 seconds.
-In other words, you did observed Google's healthiness with easily with Observed.
+And we're done! That's all it takes to print Google's health to standard output every 10 seconds with Observed.
 
-The example described here is fairly simple and would look useless at a glance, but remember that Observed is just a
-framework.
-If you want to monitor performances or get statistics on performance on your service, you can redirect the results to
-Fluentd, Ganglia or else and take advantages of their rich features and plugins.
-We like not reinventing the wheel and it is encouraged to use Observed for just to poll something and then emit the
-result to other services. Things like monitoring, watching, alerting can be done there.
+The example described here is fairly simple and may look useless at first glance, but keep in mind that Observed is just a framework.
+
+If you want to monitor performance or get statistics on performance on your service, you can redirect the results to Fluentd or other service to take advantage of their features and plugins.
+
+We prefer to not reinvent the wheel and encourage people to use Observed for polling and output results to other services for other tasks like monitoring or alerts.
 
 ## Documentation
 
@@ -181,19 +152,19 @@ Observed is documented with [YARD](https://github.com/lsegal/yard).
 The latest documentation for the master branch of Observed [is available at rubydoc.info](http://rubydoc.info/github/gree/observed).
 
 You can also generate the document locally.
-To do that, install YARD:
+To do so, install YARD:
 
 ```
 $ gem install yard
 ```
 
-And then run `yardoc` like:
+And then run `yardoc` as follows:
 
 ```
 $ yardoc 'lib/**/*.rb'
 ```
 
-Open the document:
+You can then open the generated documentation:
 
 ```
 $ open doc/index.html
@@ -205,4 +176,4 @@ $ open doc/index.html
 2.  Create your feature branch (`git checkout -b my-new-feature`)
 3.  Commit your changes (`git commit -am 'Add some feature'`)
 4.  Push to the branch (`git push origin my-new-feature`)
-5.  Create new Pull Request
+5.  Create a new pull request
