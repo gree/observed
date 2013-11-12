@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Observed::EM::VERSION
   spec.authors       = ["KUOKA Yusuke"]
   spec.email         = ["yusuke.kuoka@gree.net"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{An integration of Observed with EventMachine}
+  spec.summary       = %q{observed-eventmachine allows running Observed observations on EventMachine to achieve scalability}
   spec.homepage      = ""
   spec.license       = "MIT"
 
