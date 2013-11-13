@@ -10,7 +10,6 @@ module Observed
     def register_observed_handler(args)
       Observed.init!
       Observed.configure args
-      Observed.load! args[:config_file]
       ::Clockwork.handler do |job|
         Observed.run job
       end

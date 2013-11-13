@@ -1,7 +1,5 @@
 require 'observed/version'
-require 'observed/config_builder'
-require 'observed/system'
-require 'observed/config_dsl'
+require 'observed/context'
 require 'observed/builtin_plugins'
 require 'forwardable'
 
@@ -34,18 +32,18 @@ module Observed
     # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
     # We have to reset its state via this `init!` method before building next configurations after the first one.
     def init!
-      @sys = Observed::System.new
-      config_builder = Observed::ConfigBuilder.new(system: @sys)
-      @observed = Observed::ConfigDSL.new(builder: config_builder)
+      @context = Observed::Context.new
+      @observed = @context.config_dsl
     end
 
     def run(tag=nil)
-      @sys.config = self.config
-      @sys.run(tag)
+      sys = @context.system
+      sys.config = @observed.config
+      sys.run(tag)
     end
 
     def configure(*args)
-      @observed.send :configure, *args
+      @context.configure *args
     end
   end
 
