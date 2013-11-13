@@ -9,23 +9,28 @@ rvm gemset create observed-test
 rvm gemset use observed-test
 
 observed_dir=`dirname $0`
-plugins_dir=$observed_dir/plugins
-integrations_dir=$obseved/integrations
-integrations="clockwork"
-plugins="http fluentd gauge"
 
 cd $observed_dir
+
+observed_dir=`pwd`
+
+plugins_dir=$observed_dir/plugins
+integrations_dir=$observed_dir/integrations
+integrations="clockwork eventmachine"
+plugins="http fluentd gauge"
+
+#cd $observed_dir
 
 dirs=$observed_dir
 
 for integration in $integrations
 do
-  dirs="$dirs $integrations_dir/$integration"
+  dirs="$dirs $integrations_dir/observed-$integration"
 done
 
 for plugin in $plugins
 do
-  dirs="$dirs $plugins_dir/$plugin"
+  dirs="$dirs $plugins_dir/observed-$plugin"
 done
 
 echo $dirs
