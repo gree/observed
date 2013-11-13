@@ -48,6 +48,12 @@ module Observed
         self.new(args)
       end
 
+      # Inherits the default values stored in @defaults to the sub-class
+      def inherited(klass)
+        super if defined? super
+        klass.default defaults
+      end
+
     end
 
     module ModuleMethods

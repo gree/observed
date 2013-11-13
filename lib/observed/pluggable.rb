@@ -7,6 +7,7 @@ module Observed
       end
 
       def inherited(klass)
+        super if defined? super
         plugins << klass
       end
 
