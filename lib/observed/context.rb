@@ -21,9 +21,7 @@ module Observed
         Logger.new(logger_out)
       end
 
-      if args[:debug]
-        set_log_level_to_debug(args[:debug])
-      end
+      set_log_level_to_debug(!!args[:debug])
 
       if args[:config_file]
         load_config_file(args[:config_file])
@@ -56,6 +54,8 @@ module Observed
                       else
                         Logger::INFO
                       end
+
+      @logger.debug "Enabling Debug logs." if enabled
     end
 
     def load_config_file(path)
