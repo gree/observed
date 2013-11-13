@@ -18,12 +18,11 @@ module Observed
     def_delegators :@builder, :observe, :report, :read, :write
 
     attribute :builder
+    attribute :logger, default: Logger.new(STDOUT)
 
     def initialize(args)
       args[:builder] || fail("The key :builder must exist in #{args}")
       @builder = args[:builder]
-
-      @logger = args[:logger] if args[:logger]
 
       configure(args)
     end
@@ -68,10 +67,5 @@ module Observed
       eval_file file
     end
 
-    private
-
-    def logger
-      @logger ||= Logger.new(STDOUT)
-    end
   end
 end

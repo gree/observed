@@ -7,6 +7,8 @@ module Observed
     def initialize(args={})
       @config = args[:config] if args[:config]
       @logger = args[:logger] if args[:logger]
+
+
     end
 
     def config=(config)
@@ -49,7 +51,7 @@ module Observed
     end
 
     def logger
-      @logger ||= Logger.new(STDOUT)
+      @logger || fail("BUG? No logger configured")
     end
 
     private

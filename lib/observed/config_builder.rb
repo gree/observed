@@ -1,3 +1,5 @@
+require 'logger'
+
 require 'observed/config'
 require 'observed/configurable'
 require 'observed/default'
@@ -10,13 +12,15 @@ module Observed
   class ConfigBuilder
     include Observed::Configurable
 
+    attribute :logger, default: Logger.new(STDOUT, Logger::DEBUG)
+
     def initialize(args)
       @writer_plugins = args[:writer_plugins] if args[:writer_plugins]
       @reader_plugins = args[:reader_plugins] if args[:reader_plugins]
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
       @system = args[:system] || fail("The key :system must be in #{args}")
-      @logger = args[:logger] || Logger.new(STDOUT, Logger::DEBUG)
+      configure args
     end
 
     def system
