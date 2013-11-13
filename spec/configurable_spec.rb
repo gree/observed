@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'observed/configurable'
+require 'observed/pluggable'
 
 module ConfigurableSpec
   class Foo
@@ -12,105 +13,144 @@ module ConfigurableSpec
     default :bar => 345
   end
 
-  module Preset
+  module ConfigurableModule
     include Observed::Configurable
 
-    attribute :preset, default: 123
+    attribute :baz
   end
 
-  module PresetInherited
+  module IntermediateModule
     include Observed::Configurable
-    include Preset
+    include ConfigurableModule
+
+    attribute :bar, default: 234
   end
 
-  class ClassWithPreset
+  class ConfigurableModuleIncluder
     include Observed::Configurable
-    include Preset
+    include ConfigurableModule
 
-    attribute :foo, default: 234
+    attribute :bar, default: 234
+    default :bar => 345
+    attribute :foo, default: 123
   end
 
-  class ClassWithPresetInherited
+  class IntermediateModuleIncluder
     include Observed::Configurable
-    include PresetInherited
+    include IntermediateModule
 
-    attribute :foo, default: 234
+    default :bar => 345
+    attribute :foo, default: 123
+  end
+
+  class SpecialCMI < ConfigurableModuleIncluder
+    include Observed::Configurable
+  end
+
+  class SpecialIMI < IntermediateModuleIncluder
+    include Observed::Configurable
+  end
+
+  class Plugin
+    include Observed::Configurable
+    include Observed::Pluggable
+    include ConfigurableModule
+    attribute :bar, default: 234
+    default :bar => 345
+  end
+
+  class PluginImpl < Plugin
+    include Observed::Configurable
+    attribute :foo, default: 123
   end
 end
 
 describe Observed::Configurable do
 
-  context 'without parameters for the constructor' do
-    subject {
-      ConfigurableSpec::Foo.new
-    }
+  shared_examples_for 'a configurable object' do
     it 'uses default values for attributes' do
-      expect(subject.foo).to eq(123)
+      expect(subject.new.foo).to eq(123)
     end
+
     it 'overrides default values on `attribute name, :default => default_value`' do
-      expect(subject.bar).to eq(345)
+      expect(subject.new.bar).to eq(345)
     end
+
     it 'raises errors when attributes without values are read' do
-      expect { subject.baz }.to raise_error
+      expect { subject.new.baz }.to raise_error
     end
-  end
 
-  context 'with parameters for the constructor' do
-    subject {
-      ConfigurableSpec::Foo.new({foo: 1, bar: 2, baz: 3})
-    }
-    it 'prefers values from constructor parameters over defaults' do
-      expect(subject.foo).to eq(1)
-      expect(subject.bar).to eq(2)
-      expect(subject.baz).to eq(3)
-    end
-  end
+    context 'when configured via the `configure` method' do
+      it 'prefers arguments of the method over defaults' do
+        instance = subject.new
 
-  context 'configured through `configure(args)` method' do
-    subject {
-      foo = ConfigurableSpec::Foo.new
-      foo.configure(args)
-      foo
-    }
-    shared_examples_for 'values are set' do
-      it 'prefers values from `configure(args)` over defaults' do
-        expect(subject.foo).to eq(1)
-        expect(subject.bar).to eq(2)
-        expect(subject.baz).to eq(3)
+        instance.configure foo: 1, bar: 2
+
+        expect(instance.foo).to eq(1)
+        expect(instance.bar).to eq(2)
       end
     end
-    context 'when args has symbol keys' do
-      let(:args) {
-        {foo: 1, bar: 2, baz: 3}
-      }
-      it_behaves_like 'values are set'
+
+    context 'when configured via constructor parameters' do
+      context 'when the keys are symbols' do
+        it 'prefers values from constructor parameters over defaults' do
+          instance = subject.new({foo: 1, bar: 2, baz: 3})
+          expect(instance.foo).to eq(1)
+          expect(instance.bar).to eq(2)
+          expect(instance.baz).to eq(3)
+        end
+      end
+      context 'when the keys are strings' do
+        it 'does not prefer constructor parameters' do
+          instance = subject.new({'foo' => 1, 'bar' => 2, 'baz' => 3})
+          expect(instance.foo).to eq(123)
+          expect(instance.bar).to eq(345)
+          expect { instance.baz }.to raise_error
+        end
+      end
     end
   end
 
-  shared_examples_for 'a preset provider' do
-    it 'provides a preset of attributes' do
-      expect(subject.foo).to eq(234)
-      expect(subject.preset).to eq(123)
-
-      subject.configure foo: 1, preset: 2
-
-      expect(subject.foo).to eq(1)
-      expect(subject.preset).to eq(2)
-    end
+  context 'when included in a class' do
+    subject {
+      ConfigurableSpec::Foo
+    }
+    it_behaves_like 'a configurable object'
   end
 
   context 'when included in a module' do
     subject {
-      ConfigurableSpec::ClassWithPreset.new
+      ConfigurableSpec::ConfigurableModuleIncluder
     }
-    it_behaves_like 'a preset provider'
+    it_behaves_like 'a configurable object'
   end
 
   context 'when included via a intermediate module' do
     subject {
-      ConfigurableSpec::ClassWithPresetInherited.new
+      ConfigurableSpec::IntermediateModuleIncluder
     }
-    it_behaves_like 'a preset provider'
+    it_behaves_like 'a configurable object'
+  end
+
+  context 'when extended from a class which is a Plugin' do
+    subject {
+      ConfigurableSpec::PluginImpl
+    }
+    it_behaves_like 'a configurable object'
+  end
+
+  context 'when inherited from a class included the intermediate module' do
+    subject {
+      ConfigurableSpec::SpecialIMI
+    }
+    it_behaves_like 'a configurable object'
+  end
+
+  context 'when inherited from a class included the module includes it' do
+    subject {
+      ConfigurableSpec::SpecialCMI
+    }
+    it_behaves_like 'a configurable object'
   end
 
 end
