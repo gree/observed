@@ -68,7 +68,7 @@ module Observed
                  else
                    via = args[:via] || args[:using]
                    with = args[:with] || args[:which] || {}
-                   with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern})
+                   with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern, system: system})
                    plugin = reporter_plugins[via] ||
                        fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{reporter_plugins}"|)
                    plugin.new(with)

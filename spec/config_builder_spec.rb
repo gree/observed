@@ -128,6 +128,7 @@ describe Observed::ConfigBuilder do
     reporter = subject.reporters.first
     STDOUT.expects(:puts).with("foo.bar #{time} 123").once
     expect(reporter.match(tag)).to be_true
+    expect(reporter.system).to eq(system)
     expect { reporter.report(tag, time, { foo: { bar: 123 }}) }.to_not raise_error
   end
 
@@ -141,6 +142,7 @@ describe Observed::ConfigBuilder do
     reporter = subject.reporters.first
     STDOUT.expects(:puts).with("foo.bar #{time} 123").once
     expect(reporter.match(tag)).to be_true
+    expect(reporter.system).to eq(system)
     expect { reporter.report(tag, time, { foo: { bar: 123 }}) }.to_not raise_error
   end
 end
