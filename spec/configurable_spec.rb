@@ -63,6 +63,18 @@ module ConfigurableSpec
     include Observed::Configurable
     attribute :foo, default: 123
   end
+
+  class Overriding
+    include Observed::Configurable
+    include IntermediateModule
+
+    def foo
+      @attributes[:foo] || 123
+    end
+
+    default :bar => 345
+    attribute :foo, default: 1234
+  end
 end
 
 describe Observed::Configurable do
@@ -149,6 +161,13 @@ describe Observed::Configurable do
   context 'when inherited from a class included the module includes it' do
     subject {
       ConfigurableSpec::SpecialCMI
+    }
+    it_behaves_like 'a configurable object'
+  end
+
+  context 'when there is a method named exactly same as the attribute' do
+    subject {
+      ConfigurableSpec::Overriding
     }
     it_behaves_like 'a configurable object'
   end

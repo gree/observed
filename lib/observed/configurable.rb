@@ -32,8 +32,10 @@ module Observed
     module ClassMethods
       # @param [String|Symbol] name
       def attribute(name, options={})
-        define_method(name) do
-          get_attribute_value(name) || fail_for_not_configured_parameter(name)
+        unless instance_methods.include? name.intern
+          define_method(name) do
+            get_attribute_value(name) || fail_for_not_configured_parameter(name)
+          end
         end
         default_value =  options && options[:default]
         default name => default_value if default_value

@@ -19,6 +19,8 @@ module Observed
       attribute :logger
 
       def observe
+        method = get_attribute_value(:method)
+
         log_debug "method: #{method}, url: #{url}"
 
         uri = URI.parse(url)
