@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 require 'observed/gauge'
+require 'observed/system'
 
 shared_examples_for 'the observed-gauge plugin' do
 
@@ -20,14 +21,14 @@ shared_examples_for 'the observed-gauge plugin' do
 
   it 'reports data with averaged values' do
     subject.prepare_rrd(start: t - 120, rrd: rrd)
-    system.expects(:report).with(tag, expected_data.freeze).once
-    expect { subject.report('test.foo', t - 120, data) }.to_not raise_error
-    expect { subject.report('test.foo', t - 60, data) }.to_not raise_error
-    expect { subject.report('test.foo', t, data) }.to_not raise_error
+    system.expects(:report).with(tag, t, expected_data.freeze).once
+    expect { system.translate('test.foo', t - 120, data) }.to_not raise_error
+    expect { system.translate('test.foo', t - 60, data) }.to_not raise_error
+    expect { system.translate('test.foo', t, data) }.to_not raise_error
   end
 
   it 'creates rrd files automatically on first report' do
-    expect { subject.report('test.foo', t, data) }.to_not raise_error
+    expect { subject.translate('test.foo', t, data) }.to_not raise_error
 
     expect { File.exist? rrd }.to be_true
   end
@@ -64,8 +65,9 @@ describe Observed::Plugins::Gauge do
     }
 
     let(:system) {
-      sys = mock('system')
+      sys = Observed::System.new
 
+      sys.stubs(:translators).returns([subject])
       sys.stubs(:now).returns(t)
 
       sys
@@ -117,7 +119,7 @@ describe Observed::Plugins::Gauge do
       }
 
       it 'raise an error' do
-        expect { subject.report('test.foo', t, data) }.to raise_error(/Unexpected type of key_path met/)
+        expect { system.translate('test.foo', t, data) }.to raise_error(/Unexpected type of key_path met/)
       end
     end
 

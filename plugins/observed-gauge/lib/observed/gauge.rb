@@ -1,5 +1,5 @@
 require 'observed/logging'
-require 'observed/reporter'
+require 'observed/translator'
 require 'observed/reporter/regexp_matching'
 require 'observed/gauge/version'
 require 'logger'
@@ -7,7 +7,7 @@ require 'rrd'
 
 module Observed
   module Plugins
-    class Gauge < Observed::Reporter
+    class Gauge < Observed::Translator
 
       plugin_name 'gauge'
 
@@ -21,14 +21,14 @@ module Observed
       attribute :step
       attribute :period
 
-      def report(tag, time, data)
+      def translate(tag, time, data)
         rewrote = update_value_for_key_path(data, key_path) do |v|
           sample = coerce.call(v)
           average = get_cdp_updated_with(time, sample)
           average
         end
         unless fetch_value_for_key_path(rewrote, key_path).nan?
-          system.report(self.tag, rewrote)
+          [self.tag, time, rewrote]
         end
       end
 
