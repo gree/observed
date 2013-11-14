@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/gree/observed.png?branch=master)](https://travis-ci.org/gree/observed) [![Coverage Status](https://coveralls.io/repos/gree/observed/badge.png?branch=master)](https://coveralls.io/r/gree/observed?branch=master) [![Code Climate](https://codeclimate.com/github/gree/observed.png)](https://codeclimate.com/github/gree/observed)
 
+## Introduction
 Observed is a highly extensible framework for polling applications, middlewares and services running locally or on remote servers.
 
 -----
@@ -26,12 +27,13 @@ Observed has has a very small code-base (only a few hundred lines) which makes r
 Observed's extensible design through plugins is inspired by other Ruby projects such as Fluentd. People familiar with other Ruby products should feel right at home with Observed. As of now it is a highly ambitious and experimental framework with big potential for growth and improvements.
 
 Observed is (and its plugins should be) stateless.
-This means that it should work in the same manner whether it is run as a daemon or a _oneshot_ application like
-a regular cron job, as states should be stored outside of the application instance with regards to Observed.
+This means that it should work in the same manner whether it is run as a daemon or a regular cron job, as states should be stored outside of the Observed application instance.
 
 Observed is intended to be run on Ruby 1.9.3 but should work on Ruby 2.0+ too.
 
-## Observed is not:
+## What Observed is not
+Observed is not
+
 -  a monitoring and reporting tool such as New Relic etc. However, Observed can be used for collecting simple metrics via plugins, then pass them on to another full-fledged monitoring or reporting tool.
 -  a log collector like Fluentd. Observed can be used to emit event logs to the log collector of your choice, but it does not replace the log collector.
 -  a [job scheduler](http://en.wikipedia.org/wiki/Job_scheduler) (e.g. cron), though it can be integrated with job schedulers to make them trigger Observed to perform jobs.
@@ -89,11 +91,13 @@ include Clockwork
 
 the_dir = Pathname.new(File.dirname(__FILE__))
 
-# The following two lines are specific to Observed's Clockwork support.
+# include the Observed library for Clockwork integration
 include Observed::Clockwork
 
+# register an Observed handler
 register_observed_handler :config_file => the_dir + 'observed.rb'
 
+# create an event to be triggered every 10 seconds
 every(10.seconds, 'google.health')
 ```
 
