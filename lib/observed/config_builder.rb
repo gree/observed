@@ -96,6 +96,7 @@ module Observed
       attribute :reader
       attribute :observer
       attribute :system
+      attribute :tag
 
       def observe(data=nil)
         case observer.method(:observe).parameters.size
@@ -134,7 +135,8 @@ module Observed
                    ObserverCompatibilityAdapter.new(
                      reader: reader,
                      system: system,
-                     observer: observer
+                     observer: observer,
+                     tag: tag
                    )
                  else
                    via = args[:via] || args[:using] ||
@@ -145,7 +147,8 @@ module Observed
                    observer = plugin.new(({logger: @logger}).merge(with).merge(tag: tag, system: system))
                    ObserverCompatibilityAdapter.new(
                      system: system,
-                     observer: observer
+                     observer: observer,
+                     tag: tag
                    )
                  end
       observers << observer
