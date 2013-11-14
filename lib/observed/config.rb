@@ -23,5 +23,9 @@ module Observed
     #  @return [Array<Observed::Observer>]
     attribute :observers
 
+    # !@attribuet [rw] translators
+    #  @return [Array<Observed::Translator]
+    attribute :translators
+
   end
 end

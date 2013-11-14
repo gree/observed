@@ -11,6 +11,7 @@ describe Observed::ConfigBuilder do
         reader_plugins: reader_plugins,
         observer_plugins: observer_plugins,
         reporter_plugins: reporter_plugins,
+        translator_plugins: translator_plugins,
         system: system
     )
   }
@@ -71,6 +72,20 @@ describe Observed::ConfigBuilder do
     end
     {
         'file' => file
+    }
+  }
+  let(:translator_plugins) {
+    my_translator = Class.new(Observed::Translator) do
+      attribute :tag
+      attribute :format
+      def translate(tag, time, data)
+        formatted_data = format.call tag, time, data, Observed::Hash::Fetcher.new(data), Observed::Hash::Builder.new
+        [self.tag, time, formatted_data]
+      end
+      plugin_name 'my_translator'
+    end
+    {
+        'my_translator' => my_translator
     }
   }
 
@@ -136,7 +151,6 @@ describe Observed::ConfigBuilder do
     reporter = subject.reporters.first
     STDOUT.expects(:puts).with("foo.bar #{time} 123").once
     expect(reporter.match(tag)).to be_true
-    expect(reporter.system).to eq(system)
     expect { reporter.report(tag, time, { foo: { bar: 123 }}) }.to_not raise_error
   end
 
@@ -150,7 +164,20 @@ describe Observed::ConfigBuilder do
     reporter = subject.reporters.first
     STDOUT.expects(:puts).with("foo.bar #{time} 123").once
     expect(reporter.match(tag)).to be_true
-    expect(reporter.system).to eq(system)
     expect { reporter.report(tag, time, { foo: { bar: 123 }}) }.to_not raise_error
+  end
+
+  it 'creates translator from translator plugins' do
+    time = Time.now
+    subject.translate /foo\.bar/, via: 'my_translator', with: {
+      tag: 'foo.baz',
+      format: -> tag, time, data, f, b { b['bar.baz'] = "foo.bar #{time} #{f[tag]}"; b.build }
+    }
+    translator = subject.translators.first
+    expect(translator.match('foo.bar')).to be_true
+
+    result = ['foo.baz', time, {bar:{baz:"foo.bar #{time} 123"}}]
+
+    expect(translator.translate('foo.bar', time, {foo:{bar: 123}})).to eq(result)
   end
 end

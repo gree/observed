@@ -6,6 +6,7 @@ require 'observed/default'
 require 'observed/hash'
 require 'observed/reader'
 require 'observed/writer'
+require 'observed/translator'
 
 module Observed
 
@@ -19,6 +20,7 @@ module Observed
       @reader_plugins = args[:reader_plugins] if args[:reader_plugins]
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
+      @translator_plugins = args[:translator_plugins] if args[:translator_plugins]
       @system = args[:system] || fail("The key :system must be in #{args}")
       configure args
     end
@@ -43,6 +45,10 @@ module Observed
       @reporter_plugins || select_named_plugins_of(Observed::Reporter)
     end
 
+    def translator_plugins
+      @translator_plugins || select_named_plugins_of(Observed::Translator)
+    end
+
     def select_named_plugins_of(klass)
       plugins = {}
       klass.select_named_plugins.each do |plugin|
@@ -56,7 +62,8 @@ module Observed
           writers: writers,
           readers: readers,
           observers: observers,
-          reporters: reporters
+          reporters: reporters,
+          translators: translators
       )
     end
 
@@ -155,6 +162,30 @@ module Observed
       observer
     end
 
+    def translate(tag_pattern, args)
+      tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
+      translator = begin
+                   via = args[:via] || args[:using]
+                   with = args[:with] || args[:which] || {}
+                   with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern, system: system})
+                   plugin = translator_plugins[via] ||
+                       fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{translator_plugins}"|)
+                   plugin.new(with)
+                 end
+      begin
+        translator.match('test')
+      rescue => e
+        fail "A mis-configured translator plugin found: #{translator}"
+      rescue NotImplementedError => e
+        builtin_methods = Object.methods
+        info = (translator.methods - builtin_methods).map {|sym| translator.method(sym) }.map(&:source_location).compact
+        fail "Incomplete translator plugin found: #{translator}, defined in: #{info}"
+      end
+
+      translators << translator
+      translator
+    end
+
     def write(args)
       to = args[:to]
       with = args[:with] || args[:which]
@@ -208,6 +239,10 @@ module Observed
 
     def observers
       @observers ||= []
+    end
+
+    def translators
+      @translators ||= []
     end
   end
 

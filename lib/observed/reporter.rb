@@ -10,8 +10,6 @@ module Observed
     #   @return [Regexp]
     attribute :tag_pattern
 
-    attribute :system
-
     # @param [String] tag
     def match(tag)
       raise NotImplementedError.new
