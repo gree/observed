@@ -1,8 +1,9 @@
 require 'spec_helper'
 
 require 'observed'
+require 'logger'
 
-module Observed
+module ObservedMemo
   # a.k.a Blocking Poller
   class Poller
     def poll
@@ -13,10 +14,8 @@ module Observed
   class DefaultPoller < Poller
     include Observed::Configurable
     attribute :reader
-    attribute :output
     def poll
-      data = reader.read
-      output.write data
+      reader.read
     end
   end
 
@@ -87,6 +86,7 @@ module Observed
     def initialize(args)
       @executor = args[:executor]
     end
+
     def poll(name)
       @executor.poll(name)
     end
@@ -100,57 +100,104 @@ module Observed
     end
   end
 
+  class ExamplePoller < Poller
+    def poll
+      "result"
+    end
+  end
+
+  class ExampleConcurrentPoller < ConcurrentPoller
+    def poll
+      Promise.succeeded("result").future
+    end
+  end
+
   class SingleThreadedBlockingExecutionContext < ExecutionContext
+    # a.k.a AwaitingConcurrentPoller
     class BlockingConcurrentPoller < ConcurrentPoller
+
       include Observed::Configurable
+
       attribute :poller
+
       def poll
-        begin
-          Promise.succeeded(poller.poll).future
+        promise = begin
+          Promise.succeeded(poller.poll)
         rescue => e
-          Promise.failed(e).future
+          Promise.failed(e)
         end
+        promise.future
       end
     end
 
-    DefaultConcurrentPoller = BlockingConcurrentPoller
-
     class ComponentFactoryCreator
+
       include Observed::Configurable
+
       attribute :poller_plugins
       attribute :context
+
       def poller(name, args={})
         poller_class = poller_pugins[name]
         if poller_class.ancestors.include? Poller
-          BasicFactory.new { DefaultConcurrentPoller.new(args.merge(context: context, poller: poller_class.new(args))) }
+          BasicFactory.new { BlockingConcurrentPoller.new(args.merge(poller: poller_class.new(args))) }
         elsif poller_class.ancestors.include? ConcurrentPoller
-          BasicFactory.new { poller_class.new(args.merge(context: context)) }
+          BasicFactory.new { poller_class.new(args) }
+        else
+          fail "Unexpected type of poller class found for the name(#{name.inspect}): #{poller_class}"
         end
       end
     end
 
     class Executor
+
+      include Observed::Configurable
+
+      include Observed::Logging
+
       def initialize(config)
         @config = config
         @pollers = {}
         @config.poller_factories.each do |name, factory|
           @pollers[name] ||= factory.create
         end
+        @logger = config[:logger] || Logger.new(STDOUT)
       end
+
       def poll(name=nil)
         if name
-          @pollers[name].poll
+          future_data = @pollers[name].poll
+          future_data.on_success { |data|
+            observe(name, data)
+          }
         else
-          @pollers.each(&:poll)
+          @pollers.each do |name, poller|
+            future_data = poller.poll
+            future_data.on_success { |data|
+              observe(name, data)
+            }
+          end
         end
       end
+
       def observe(name, data)
-        @observers[name].observe(data)
+        future = @observers[name].observe(data)
+        future.on_success { |tag, time, data|
+          report(tag, time, data)
+        }
       end
+
       def report(tag, time, data)
         @reporters.each do |reporter|
           if reporter.match(tag)
-            reporter.report(tag, time, data)
+            result = reporter.report(tag, time, data)
+            result.on_success { |message|
+              debug %Q|report(#{tag.inspect}, #{time.inspect}, #{data.inspect} #=> #{message.inspect}|
+            }
+            result.on_failure { |error|
+              # Replace this using nesty later
+              raise error
+            }
           end
         end
       end
@@ -188,8 +235,11 @@ module Observed
   end
 
   class ConfigBuilder
+    include Observed::Configurable
+    attribute :component_factory
+    attribute :poller_factories, default: {}
     def poll(name, args={})
-      poller_factories << component_factory.poller(name, args)
+      poller_factories[name] = component_factory.poller(name, args)
     end
   end
 
@@ -226,9 +276,34 @@ module Observed
   # interface ---- system ----- interface
 end
 
-describe Observed::ExecutionContext do
+describe ObservedMemo::ExecutionContext do
   let(:executor) { mock('executor') }
+  let(:config_builder) {
+    ObservedMemo::ConfigBuilder.new(component_factory: component_factory, )
+  }
+  let(:component_factory) {
+    ObservedMemo::ComponentFactoryCreator.new(context: context, poller_plugins: poller_plugins)
+  }
+  let(:poller_plugins) {
+    {
+      'example' => ObservedMemo::ExamplePoller,
+      'example2' => ObservedMemo::ExampleConcurrentPoller
+    }
+  }
+  subject {
+    ObservedMemo::ExecutionContext.new(executor: executor)
+  }
   it "doesn't smoke" do
-    described_class.new(executor: executor)
+    expect { subject }.to_not raise_error
+
+    #subject.define do
+    #  # Creates the example poller and the default observer
+    #  observe 'foo', via: 'example'
+    #end
+    #
+    #result = subject.execute do
+    #  poll 'foo'
+    #end
+    #ObservedMemo::DefaultObserver.any_instance.expects(:observe).with('foo', 'result')
   end
 end
