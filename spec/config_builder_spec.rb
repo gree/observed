@@ -118,6 +118,14 @@ describe Observed::ConfigBuilder do
     expect { subject.build.observers.first.observe }.to_not raise_error
   end
 
+  #it 'creates default observers from poller plugins' do
+  #  subject.observe 'foo.bar', via: 'poll', which: {
+  #      result: 'result'
+  #  }
+  #  system.expects(:report).with('foo.bar', { 'content' => 'file content' })
+  #  expect { subject.build.pollers.first.poll }.to_not raise_error
+  #end
+
   it 'creates reporters from writer plugins' do
     tag = 'foo.bar'
     time = Time.now

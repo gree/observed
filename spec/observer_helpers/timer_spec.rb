@@ -24,6 +24,30 @@ describe describe Observed::ObserverHelpers::Timer do
     mock('logger')
   }
 
+  context 'when included to the new Observer implementation class' do
+    subject {
+      klass = Class.new(Observed::Observer) do
+        include Observed::ObserverHelpers::Timer
+        include Observed::Configurable
+        include Observed::Logging
+
+        def observe(data)
+          [tag, data]
+        end
+      end
+      klass.new
+    }
+    it 'returns the result instead of reporting it via the system' do
+      data = ['test.success', {status: :success, result: 'the result', elapsed_time: after - before }]
+
+      expect(
+          subject.time_and_report(tag: 'test', timeout_in_seconds: 1.0) do
+            'the result'
+          end
+      ).to eq(data)
+    end
+  end
+
   context 'when its logging enabled' do
 
     subject {
@@ -146,13 +170,15 @@ describe describe Observed::ObserverHelpers::Timer do
       context 'when :tag parameter is given' do
         it 'reports the result of `time`' do
 
-          sys.expects(:report).with('test.success', {status: :success, result: 'the result', elapsed_time: after - before })
+          data = ['test.success', {status: :success, result: 'the result', elapsed_time: after - before }]
 
-          expect {
+          sys.expects(:report).with(*data).once
+
+          expect(
             subject.time_and_report(tag: 'test', timeout_in_seconds: 1.0) do
               'the result'
             end
-          }.to_not raise_error
+          ).to eq(data)
 
         end
       end

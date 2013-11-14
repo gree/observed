@@ -31,7 +31,13 @@ module Observed
         format = options[:format] || ->(r){ r }
         result = time(options, &block)
 
-        system.report("#{tag}.#{result[:status]}", format.call(result))
+        data = ["#{tag}.#{result[:status]}", format.call(result)]
+
+        if self.method(:observe).parameters.size != 1
+          system.report(*data)
+        end
+
+        data
       end
 
     end

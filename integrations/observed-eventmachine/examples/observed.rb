@@ -9,10 +9,10 @@ extend Observed::EM
 class Test < Observed::Observer
   plugin_name 'test'
   def observe
-    system.report(tag, {foo:1})
     puts "Sleeping 10 seconds"
     sleep 10.0
     puts "Slept 10 seconds"
+    [tag, {foo:1}]
   end
 end
 

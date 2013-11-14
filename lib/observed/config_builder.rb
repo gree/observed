@@ -91,6 +91,37 @@ module Observed
       reporter
     end
 
+    class ObserverCompatibilityAdapter
+      include Observed::Configurable
+      attribute :reader
+      attribute :observer
+      attribute :system
+
+      def observe(data=nil)
+        case observer.method(:observe).parameters.size
+          when 0
+            traditional_observe
+          when 1
+            modern_observe(data)
+        end
+      end
+
+      private
+
+      def traditional_observe
+        observer.observe
+      end
+
+      def modern_observe(data=nil)
+        observation = if data
+                        observer.observe data
+                      else
+                        observer.observe reader.read
+                      end
+        system.report *observation
+      end
+    end
+
     # @param [String] tag The tag which is assigned to data which is generated from this observer, and is sent to
     # reporters later
     # @param [Hash] args The configuration for each observer which may or may not contain (1) which observer plugin to
@@ -99,14 +130,23 @@ module Observed
     def observe(tag, args)
       reader = read(args)
       observer = if reader
-                   Observed::Default::Observer.new.configure(tag: tag, reader: reader, system: system)
+                   observer = Observed::Default::Observer.new.configure(tag: tag, reader: reader, system: system)
+                   ObserverCompatibilityAdapter.new(
+                     reader: reader,
+                     system: system,
+                     observer: observer
+                   )
                  else
                    via = args[:via] || args[:using] ||
                        fail(RuntimeError, %Q|Missing observer plugin name for the tag "#{tag}" in "#{args}"|)
                    with = args[:with] || args[:which] || {}
                    plugin = observer_plugins[via] ||
                        fail(RuntimeError, %Q|The observer plugin named "#{via}" is not found in "#{observer_plugins}"|)
-                   plugin.new(({logger: @logger}).merge(with).merge(tag: tag, system: system))
+                   observer = plugin.new(({logger: @logger}).merge(with).merge(tag: tag, system: system))
+                   ObserverCompatibilityAdapter.new(
+                     system: system,
+                     observer: observer
+                   )
                  end
       observers << observer
       observer

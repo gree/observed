@@ -31,7 +31,7 @@ module Observed
       end
     end
 
-    def run(observation_name=nil)
+    def run(observation_name=nil, data=nil)
 
       if observation_name
         observers_to_run = observers.reject { |o| o.tag != observation_name }
@@ -41,7 +41,7 @@ module Observed
       end
 
       observers_to_run.map do |input|
-        input.observe
+        input.observe data
       end
 
     end
