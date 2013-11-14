@@ -1,4 +1,14 @@
 module Observed
+  # Indicates that the class is pluggable (or extensible or a extension point).
+  # "pluggable" means that the class included this module will be the outlet in where Observed plug-ins are plugged.
+  #
+  # @example
+  # class Reader
+  #   include Pluggable
+  # end
+  # class FooReader < Reader; end
+  # class BarReader < Reader; end
+  # Reader.plugins #=> [FooReader, BarReader]
   module Pluggable
 
     module ClassMethods

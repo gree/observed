@@ -1,4 +1,7 @@
 module Observed
+  # Indicates that classes included this module to have attributes which are configurable.
+  # `configurable` means that the attributes can be configured via named parameters of
+  # the constructor and the `configure` instance method of the class included this module.
   module Configurable
 
     def initialize(args={})

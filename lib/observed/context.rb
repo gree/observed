@@ -5,6 +5,9 @@ require 'observed/config_builder'
 require 'observed/config_dsl'
 
 module Observed
+  # The run context of an Observed system.
+  # It can be initialized via parameters to automatically configure the system and everything needed such as the config
+  # builder, the DSL, the logger, etc.
   class Context
 
     def initialize(args={})
