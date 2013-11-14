@@ -9,5 +9,7 @@ matrix:
   exclude:
     - rvm: 1.9.3
       jdk: openjdk7
+  allow_failures:
+    - rvm: jruby-19mode
 script: ./run-integration-tests
 before_install: sudo apt-get install librrd-dev
