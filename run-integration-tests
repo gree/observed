@@ -53,6 +53,8 @@ for target in $dirs
 do
   echo Target: $target
   cd $target
+  echo Current directory: `pwd`
+  export BUNDLE_GEMFILE=$target/Gemfile
   bundle install
   if [[ $? -ne 0 ]]; then
     bundle update
