@@ -16,7 +16,7 @@ module Observed
     def initialize(current_job)
       @current_job = current_job
     end
-    def now(data={}, options={})
+    def now(data={}, options=nil)
       @current_job.now(data, options) do |data, options2|
         yield data, (options2 || options) if block_given?
       end
@@ -33,7 +33,7 @@ module Observed
       @base_job = base_job
       @next_job = next_job
     end
-    def now(data={}, options={})
+    def now(data={}, options=nil)
       @base_job.now(data, options) do |data, options2|
         @next_job.now(data, (options2 || options)) do |data, options3|
           yield data, (options3 || options2 || options) if block_given?
@@ -47,7 +47,7 @@ module Observed
       @jobs = jobs || fail('jobs missing')
       @next_job = NoOpJob.instance
     end
-    def now(data={}, options={})
+    def now(data={}, options=nil)
       @jobs.each do |job|
         job.now(data, options) do |data, options2|
           yield data, (options2 || options) if block_given?
@@ -67,22 +67,45 @@ module Observed
   class ProcJob < Job
     def initialize(args, &block)
       @executor = args[:executor] || fail('Missing a value for :executor')
+      @listener = args[:listener] || fail('Missing a value for :listener')
       @block = block
       @next_job = NoOpJob.instance
     end
-    def now(data={}, options={})
+    def now(data={}, options=nil)
       @executor.execute {
-        yield @block.call(data, options) if block_given?
+        result = @block.call(data, options)
+        yield result if block_given?
+        if result.is_a? Hash
+          if options
+            @listener.on_result(result, options)
+          else
+            @listener.on_result(result)
+          end
+        elsif result.is_a? Array
+          if result.size == 1 && options
+            @listener.on_result(result, options)
+          else
+            @listener.on_result(*result)
+          end
+        end
       }
+    end
+  end
+
+  class JobListener
+    def on_result(data={}, options={})
+
     end
   end
 
   class JobFactory
     def initialize(args)
       @executor = args[:executor] || fail('Missing a value for :executor')
+      @listener = args[:listener] || JobListener.new
     end
+
     def job(&block)
-      ProcJob.new(executor: @executor, &block)
+      ProcJob.new(executor: @executor, listener: @listener, &block)
     end
 
     def mutable_job(&block)

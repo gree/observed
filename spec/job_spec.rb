@@ -49,4 +49,33 @@ describe Observed::Job do
       a.now(input_data)
     end
   end
+
+  it 'notifies listeners with resulting data' do
+
+    listener = mock('listener')
+    factory = Observed::JobFactory.new(
+        :executor => Observed::BlockingJobExecutor.new,
+        :listener => listener
+    )
+    output = mock('output')
+    input_data = { input: 1 }
+    a = factory.job { |data|
+      data.merge(a: 2)
+    }
+    b = factory.job { |data, options|
+      data.merge(b: 3)
+    }
+    c = factory.job { |data, options|
+      output.write data.merge(c: 4)
+    }
+    d = factory.job { |data|
+      output.write data.merge(d: 5)
+    }
+    foo = a.then(b).then(c, d)
+    output.expects(:write).with({input:1,a:2,b:3,c:4})
+    output.expects(:write).with({input:1,a:2,b:3,d:5})
+    listener.expects(:on_result).with({input:1,a:2}, {opt:1})
+    listener.expects(:on_result).with({input:1,a:2,b:3}, {opt:1})
+    foo.now(input_data, {opt:1})
+  end
 end
