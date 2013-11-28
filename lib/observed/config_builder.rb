@@ -7,8 +7,43 @@ require 'observed/hash'
 require 'observed/reader'
 require 'observed/writer'
 require 'observed/translator'
+require 'observed/execution_job_factory'
 
 module Observed
+
+  class ProcObserver < Observed::Observer
+    def initialize(&block)
+      @block = block
+    end
+    def observe(data=nil, options=nil)
+      @block.call data, options
+    end
+  end
+
+  class ProcTranslator < Observed::Translator
+    def initialize(&block)
+      @block = block
+    end
+    def match(tag)
+      false
+    end
+    def translate(tag, time, data)
+      @block.call data, {tag: tag, time: time}
+    end
+  end
+
+  class ProcReporter < Observed::Reporter
+    def initialize(tag_pattern, &block)
+      @tag_pattern = tag_pattern
+      @block = block
+    end
+    def match(tag)
+      tag.match(@tag_pattern) if tag && @tag_pattern
+    end
+    def report(tag, time, data)
+      @block.call data, {tag: tag, time: time}
+    end
+  end
 
   class ConfigBuilder
     include Observed::Configurable
@@ -71,18 +106,26 @@ module Observed
     # @param [Hash] args The configuration for each reporter which may or may not contain (1) which reporter plugin to
     # use or which writer plugin to use (in combination with the default reporter plugin) (2) initialization parameters
     # to instantiate the reporter/writer plugin
-    def report(tag_pattern, args)
+    def report(tag_pattern=nil, args={}, &block)
+      if tag_pattern.is_a? ::Hash
+        args = tag_pattern
+        tag_pattern = nil
+      end
       writer = write(args)
-      tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
       reporter = if writer
+                   tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
                    Observed::Default::Reporter.new.configure(tag_pattern: tag_pattern, writer: writer, system: system)
-                 else
+                 elsif args[:via] || args[:using]
                    via = args[:via] || args[:using]
                    with = args[:with] || args[:which] || {}
                    with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern, system: system})
                    plugin = reporter_plugins[via] ||
                        fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{reporter_plugins}"|)
                    plugin.new(with)
+                 elsif block_given?
+                   Observed::ProcReporter.new tag_pattern, &block
+                 else
+                   fail "Invalid combination of arguments: #{tag_pattern} #{args}"
                  end
       begin
         reporter.match('test')
@@ -95,15 +138,20 @@ module Observed
       end
 
       reporters << reporter
-      reporter
+      convert_to_job(reporter)
     end
 
-    class ObserverCompatibilityAdapter
+    class ObserverCompatibilityAdapter < Observed::Observer
       include Observed::Configurable
       attribute :reader
       attribute :observer
       attribute :system
       attribute :tag
+
+      def configure(args)
+        super
+        observer.configure(args)
+      end
 
       def observe(data=nil)
         case observer.method(:observe).parameters.size
@@ -135,7 +183,7 @@ module Observed
     # @param [Hash] args The configuration for each observer which may or may not contain (1) which observer plugin to
     # use or which reader plugin to use (in combination with the default observer plugin) (2) initialization parameters
     # to instantiate the observer/reader plugin
-    def observe(tag, args)
+    def observe(tag=nil, args={}, &block)
       reader = read(args)
       observer = if reader
                    observer = Observed::Default::Observer.new.configure(tag: tag, reader: reader, system: system)
@@ -145,7 +193,7 @@ module Observed
                      observer: observer,
                      tag: tag
                    )
-                 else
+                 elsif args[:via] || args[:using]
                    via = args[:via] || args[:using] ||
                        fail(RuntimeError, %Q|Missing observer plugin name for the tag "#{tag}" in "#{args}"|)
                    with = args[:with] || args[:which] || {}
@@ -157,20 +205,24 @@ module Observed
                      observer: observer,
                      tag: tag
                    )
+                 else
+                   Observed::ProcObserver.new &block
                  end
       observers << observer
-      observer
+      convert_to_job(observer)
     end
 
-    def translate(tag_pattern, args)
-      tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
-      translator = begin
+    def translate(tag_pattern=nil, args={}, &block)
+      translator = if args[:via] || args[:using]
+                     tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
                    via = args[:via] || args[:using]
                    with = args[:with] || args[:which] || {}
                    with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern, system: system})
                    plugin = translator_plugins[via] ||
                        fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{translator_plugins}"|)
                    plugin.new(with)
+                   else
+                     Observed::ProcTranslator.new &block
                  end
       begin
         translator.match('test')
@@ -183,7 +235,7 @@ module Observed
       end
 
       translators << translator
-      translator
+      convert_to_job(translator)
     end
 
     def write(args)
@@ -243,6 +295,13 @@ module Observed
 
     def translators
       @translators ||= []
+    end
+
+    private
+
+    def convert_to_job(underlying)
+      @execution_job_factory ||= Observed::ExecutionJobFactory.new
+      @execution_job_factory.convert_to_job(underlying)
     end
   end
 

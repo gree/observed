@@ -12,11 +12,20 @@ module Observed
     end
 
     def report(tag, time, data=nil)
-      if time.nil?
+      options = nil
+      if tag.is_a?(::Hash)
+        data = tag
+        options = time || {}
+        tag = nil
+      elsif tag.is_a?(String) && time.is_a?(::Hash)
+        options = data
         data = time
-        time = Time.now
+      else
+        options = {tag: tag, time: time}
       end
-      @reported = [data, {tag: tag, time: time}]
+      options ||= {}
+      options[:time] ||= now
+      @reported = [data, options]
     end
 
     def reported
@@ -40,6 +49,7 @@ module Observed
     def convert_to_job(underlying)
       if underlying.is_a? Observed::Observer
         @job_factory.job {|data, options|
+          options ||= {}
           m = underlying.method(:observe)
           fake_system = FakeSystem.new(time: options[:time])
           underlying.configure(system: fake_system)
@@ -56,6 +66,7 @@ module Observed
         }
       elsif underlying.is_a? Observed::Reporter
         @job_factory.job {|data, options|
+          options ||= {}
           m = underlying.method(:report)
           num_parameters = m.parameters.size
           case num_parameters
@@ -72,6 +83,7 @@ module Observed
         }
       elsif underlying.is_a? Observed::Translator
         @job_factory.job {|data, options|
+          options ||= {}
           m = underlying.method(:translate)
           num_parameters = m.parameters.size
           case num_parameters

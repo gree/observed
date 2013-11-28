@@ -76,4 +76,53 @@ describe Observed do
       end
     end
   end
+
+  describe 'when included' do
+    subject {
+      Module.new do
+        extend Observed
+        def self.out(v=nil)
+          if v
+            @out = v
+          end
+          @out
+        end
+      end
+    }
+    it 'can be used to define components and trigger them immediately' do
+
+      out = mock('out')
+      context = subject
+      context.out(out)
+
+      common = 'common'
+
+      subject.instance_eval do
+        report_to_out = report do |data, options|
+          out.write data.merge(baz2:data[:baz]).merge(r3: common).merge(options)
+        end
+        foo = (
+          observe 'foo' do |data|
+            data.merge(foo2:data[:foo],bar:2)
+          end
+        ).then(
+          translate do |data, options|
+            data.merge(bar2:data[:bar],baz:3)
+          end
+        ).then(
+          report_to_out,
+          report_to_out
+        )
+
+        t = Time.now
+
+        out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+          .twice
+
+        foo.now({foo:1}, {tag: 't', time: t})
+
+      end
+
+    end
+  end
 end

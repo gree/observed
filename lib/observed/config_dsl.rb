@@ -15,7 +15,7 @@ module Observed
 
     include Observed::Configurable
 
-    def_delegators :@builder, :observe, :report, :read, :write
+    def_delegators :@builder, :observe, :translate, :report, :read, :write
 
     attribute :builder
     attribute :logger, default: Logger.new(STDOUT)

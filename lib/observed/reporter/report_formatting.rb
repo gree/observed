@@ -26,7 +26,15 @@ module Observed
 
       include Observed::Configurable
 
-      attribute :format, default: -> tag, time, data { "#{Time.at(time)} #{tag} #{data}" }
+      attribute :format, default: -> tag, time, data {
+        begin
+          "#{Time.at(time)} #{tag} #{data}"
+        rescue => e
+          nested = Exception.new("Error while formatting the data: tag=#{tag} time=#{time} data=#{data} " + e.message)
+          nested.set_backtrace(e.backtrace)
+          raise nested
+        end
+      }
 
       # Format the data being reported. The data includes 3 parameters: `tag`, `time` and `data`.
       # @param [String] tag

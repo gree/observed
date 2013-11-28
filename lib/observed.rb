@@ -26,7 +26,7 @@ module Observed
   class Singleton
     extend Forwardable
 
-    def_delegators :@observed, :require_relative, :observe, :report, :write, :read, :config, :load!, :working_directory
+    def_delegators :@observed, :require_relative, :observe, :translate, :report, :write, :read, :config, :load!, :working_directory
 
     # Call this method before you are going to build 2nd or later Observed configuration using this module.
     # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
@@ -67,7 +67,7 @@ module Observed
 
   extend Forwardable
 
-  def_delegators :@@singleton, :run, :init!, :configure, :require_relative, :observe, :report, :write, :read, :config,
+  def_delegators :@@singleton, :run, :init!, :configure, :require_relative, :observe, :translate, :report, :write, :read, :config,
                  :load!, :working_directory
 
   extend self
