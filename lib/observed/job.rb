@@ -1,3 +1,5 @@
+require 'logger'
+
 module Observed
   class Job
     def then(*jobs)
@@ -68,27 +70,49 @@ module Observed
     def initialize(args, &block)
       @executor = args[:executor] || fail('Missing a value for :executor')
       @listener = args[:listener] || fail('Missing a value for :listener')
+      @logger = args[:logger]
       @block = block
       @next_job = NoOpJob.instance
+
+      if @logger.nil?
+        @logger = ::Logger.new(STDERR)
+        @logger.level = ::Logger::WARN
+      end
     end
     def now(data={}, options=nil)
       @executor.execute {
         result = @block.call(data, options)
         yield result if block_given?
-        if result.is_a? Hash
-          if options
-            @listener.on_result(result, options)
-          else
-            @listener.on_result(result)
-          end
-        elsif result.is_a? Array
-          if result.size == 1 && options
-            @listener.on_result(result, options)
-          else
-            @listener.on_result(*result)
-          end
-        end
+        notify_listener(data: data, options: options, result: result)
       }
+    end
+
+    private
+
+    def notify_listener(args)
+      return unless @listener
+
+      data = args[:data]
+      options = args[:options]
+      result = args[:result]
+
+      @logger.debug "Notifying listeners with the result(#{result}) generated from the input data(#{data}) and the options(#{options})"
+
+      if result.is_a? ::Hash
+        if options
+          @listener.on_result(result, options)
+        else
+          @listener.on_result(result)
+        end
+      elsif result.is_a? ::Array
+        if result.size == 1 && options
+          @listener.on_result(result, options)
+        elsif result.size == 2
+          @listener.on_result(*result)
+        else
+          fail 'Unexpected number of elements in the result array: #{result}'
+        end
+      end
     end
   end
 
