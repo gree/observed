@@ -23,9 +23,6 @@ module Observed
     def initialize(&block)
       @block = block
     end
-    def match(tag)
-      false
-    end
     def translate(tag, time, data)
       @block.call data, {tag: tag, time: time}
     end
@@ -196,16 +193,6 @@ module Observed
                    else
                      Observed::ProcTranslator.new &block
                  end
-      begin
-        translator.match('test')
-      rescue => e
-        fail "A mis-configured translator plugin found: #{translator}"
-      rescue NotImplementedError => e
-        builtin_methods = Object.methods
-        info = (translator.methods - builtin_methods).map {|sym| translator.method(sym) }.map(&:source_location).compact
-        fail "Incomplete translator plugin found: #{translator}, defined in: #{info}"
-      end
-
       convert_to_job(translator)
     end
 
