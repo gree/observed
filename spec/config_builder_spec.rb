@@ -80,7 +80,7 @@ describe Observed::ConfigBuilder do
       attribute :format
       def translate(tag, time, data)
         formatted_data = format.call tag, time, data, Observed::Hash::Fetcher.new(data), Observed::Hash::Builder.new
-        [self.tag, time, formatted_data]
+        {formatted:formatted_data}
       end
       plugin_name 'my_translator'
     end
@@ -169,15 +169,15 @@ describe Observed::ConfigBuilder do
 
   it 'creates translator from translator plugins' do
     time = Time.now
-    subject.translate /foo\.bar/, via: 'my_translator', with: {
+    translator = subject.translate /foo\.bar/, via: 'my_translator', with: {
       tag: 'foo.baz',
       format: -> tag, time, data, f, b { b['bar.baz'] = "foo.bar #{time} #{f[tag]}"; b.build }
     }
-    translator = subject.translators.first
-    expect(translator.match('foo.bar')).to be_true
 
-    result = ['foo.baz', time, {bar:{baz:"foo.bar #{time} 123"}}]
+    result = {bar:{baz:"foo.bar #{time} 123"}}
 
-    expect(translator.translate('foo.bar', time, {foo:{bar: 123}})).to eq(result)
+    translator.now({foo:{bar: 123}}, {tag: 'foo.bar', time: time}) do |data, options|
+      expect(data).to eq({formatted: result})
+    end
   end
 end

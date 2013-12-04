@@ -24,21 +24,9 @@ module Observed
         data = time
         time = self.now
       end
-      translate(tag, time, data)
       reporters.each do |reporter|
         if reporter.match(tag)
           reporter.report(tag, time, data)
-        end
-      end
-    end
-
-    def translate(tag, time, data)
-      translators.each do |translator|
-        if translator.match(tag)
-          result = translator.translate(tag, time, data)
-          if result
-            report *result
-          end
         end
       end
     end
@@ -74,10 +62,6 @@ module Observed
 
     def reporters
       config.reporters
-    end
-
-    def translators
-      config.translators
     end
 
   end

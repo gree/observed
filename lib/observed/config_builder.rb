@@ -97,8 +97,7 @@ module Observed
           writers: writers,
           readers: readers,
           observers: observers,
-          reporters: reporters,
-          translators: translators
+          reporters: reporters
       )
     end
 
@@ -234,7 +233,6 @@ module Observed
         fail "Incomplete translator plugin found: #{translator}, defined in: #{info}"
       end
 
-      translators << translator
       convert_to_job(translator)
     end
 
@@ -291,10 +289,6 @@ module Observed
 
     def observers
       @observers ||= []
-    end
-
-    def translators
-      @translators ||= []
     end
 
     private

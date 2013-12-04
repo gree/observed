@@ -40,7 +40,6 @@ describe Observed::System do
     context 'when the time of a report is omitted' do
       it 'complements the current time' do
         reporter.expects(:report).with('the_tag', the_time, {data:1})
-        translator.expects(:translate).with('the_tag', the_time, {data:1})
         subject.report('the_tag', {data:1})
       end
     end
