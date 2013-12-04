@@ -52,7 +52,6 @@ module Observed
 
     def initialize(args)
       @writer_plugins = args[:writer_plugins] if args[:writer_plugins]
-      @reader_plugins = args[:reader_plugins] if args[:reader_plugins]
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
       @translator_plugins = args[:translator_plugins] if args[:translator_plugins]
@@ -66,10 +65,6 @@ module Observed
 
     def writer_plugins
       @writer_plugins || select_named_plugins_of(Observed::Writer)
-    end
-
-    def reader_plugins
-      @reader_plugins || select_named_plugins_of(Observed::Reader)
     end
 
     def observer_plugins
@@ -95,7 +90,6 @@ module Observed
     def build
       Observed::Config.new(
           writers: writers,
-          readers: readers,
           observers: observers,
           reporters: reporters
       )
@@ -142,7 +136,6 @@ module Observed
 
     class ObserverCompatibilityAdapter < Observed::Observer
       include Observed::Configurable
-      attribute :reader
       attribute :observer
       attribute :system
       attribute :tag
@@ -171,7 +164,7 @@ module Observed
         observation = if data
                         observer.observe data
                       else
-                        observer.observe reader.read
+                        observer.observe
                       end
         system.report *observation
       end
@@ -183,16 +176,7 @@ module Observed
     # use or which reader plugin to use (in combination with the default observer plugin) (2) initialization parameters
     # to instantiate the observer/reader plugin
     def observe(tag=nil, args={}, &block)
-      reader = read(args)
-      observer = if reader
-                   observer = Observed::Default::Observer.new.configure(tag: tag, reader: reader, system: system)
-                   ObserverCompatibilityAdapter.new(
-                     reader: reader,
-                     system: system,
-                     observer: observer,
-                     tag: tag
-                   )
-                 elsif args[:via] || args[:using]
+      observer = if args[:via] || args[:using]
                    via = args[:via] || args[:using] ||
                        fail(RuntimeError, %Q|Missing observer plugin name for the tag "#{tag}" in "#{args}"|)
                    with = args[:with] || args[:which] || {}
@@ -256,31 +240,8 @@ module Observed
       writer
     end
 
-    def read(args)
-      from = args[:from]
-      with = args[:with] || [:which]
-      reader = case from
-               when String
-                 plugin = reader_plugins[from] || fail(RuntimeError, %Q|The reader plugin named "#{from}" is not found in "#{reader_plugins}"|)
-                 with = ({logger: @logger}).merge(with)
-                 plugin.new(with)
-               when Observed::Reader
-                 from
-               when nil
-                 nil
-               else
-                 fail "Unexpected type of value for the key :from in: #{args}"
-               end
-      readers << reader if reader
-      reader
-    end
-
     def writers
       @writers ||= []
-    end
-
-    def readers
-      @readers ||= []
     end
 
     def reporters

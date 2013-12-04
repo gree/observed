@@ -98,29 +98,6 @@ describe Observed::ConfigBuilder do
     expect { subject.build.writers.first.write('foo.bar', time, {foo:{bar:123}}) }.to_not raise_error
   end
 
-  it 'creates readers' do
-    subject.read from: 'file', with: {
-      path: 'foo.txt',
-      key: 'content'
-    }
-    File.open('foo.txt', 'w') do |f|
-      f.write('file content')
-    end
-    expect(subject.build.readers.first.read).to eq({ 'content' => 'file content' })
-  end
-
-  it 'creates observers from reader plugins' do
-    subject.observe 'foo.bar', from: 'file', with: {
-      path: 'foo.txt',
-      key: 'content'
-    }
-    File.open('foo.txt', 'w') do |f|
-      f.write('file content')
-    end
-    system.expects(:report).with('foo.bar', { 'content' => 'file content' })
-    expect { subject.build.observers.first.observe }.to_not raise_error
-  end
-
   it 'creates observers from observer plugins' do
     subject.observe 'foo.bar', via: 'my_file', which: {
         path: 'foo.txt',
