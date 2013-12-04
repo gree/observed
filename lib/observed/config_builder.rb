@@ -4,7 +4,6 @@ require 'observed/config'
 require 'observed/configurable'
 require 'observed/default'
 require 'observed/hash'
-require 'observed/reader'
 require 'observed/translator'
 require 'observed/execution_job_factory'
 

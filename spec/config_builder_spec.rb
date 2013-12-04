@@ -7,7 +7,6 @@ describe Observed::ConfigBuilder do
 
   subject {
     Observed::ConfigBuilder.new(
-        reader_plugins: reader_plugins,
         observer_plugins: observer_plugins,
         reporter_plugins: reporter_plugins,
         translator_plugins: translator_plugins,
@@ -58,21 +57,6 @@ describe Observed::ConfigBuilder do
     { 'stdout' => stdout }
   }
 
-  let(:reader_plugins) {
-    file = Class.new(Observed::Reader) do
-      attribute :path
-      attribute :key
-      def read
-        content = File.open(path, 'r') do |f|
-          f.read
-        end
-        { key => content }
-      end
-    end
-    {
-        'file' => file
-    }
-  }
   let(:translator_plugins) {
     my_translator = Class.new(Observed::Translator) do
       attribute :tag
