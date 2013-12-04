@@ -7,7 +7,6 @@ describe Observed::ConfigBuilder do
 
   subject {
     Observed::ConfigBuilder.new(
-        writer_plugins: writer_plugins,
         reader_plugins: reader_plugins,
         observer_plugins: observer_plugins,
         reporter_plugins: reporter_plugins,
@@ -89,15 +88,6 @@ describe Observed::ConfigBuilder do
     }
   }
 
-  it 'creates writers' do
-    time = Time.now
-    subject.write to: 'stdout', with: {
-      format: -> tag, time, data, d { "value:#{d['foo.bar']}" }
-    }
-    STDOUT.expects(:puts).with('value:123')
-    expect { subject.build.writers.first.write('foo.bar', time, {foo:{bar:123}}) }.to_not raise_error
-  end
-
   it 'creates observers from observer plugins' do
     subject.observe 'foo.bar', via: 'my_file', which: {
         path: 'foo.txt',
@@ -117,19 +107,6 @@ describe Observed::ConfigBuilder do
   #  system.expects(:report).with('foo.bar', { 'content' => 'file content' })
   #  expect { subject.build.pollers.first.poll }.to_not raise_error
   #end
-
-  it 'creates reporters from writer plugins' do
-    tag = 'foo.bar'
-    time = Time.now
-
-    subject.report /foo\.bar/, to: 'stdout', with: {
-      format: -> tag, time, data, d { "foo.bar #{time} #{d[tag]}" }
-    }
-    reporter = subject.reporters.first
-    STDOUT.expects(:puts).with("foo.bar #{time} 123").once
-    expect(reporter.match(tag)).to be_true
-    expect { reporter.report(tag, time, { foo: { bar: 123 }}) }.to_not raise_error
-  end
 
   it 'creates reporters from reporter plugins' do
     tag = 'foo.bar'

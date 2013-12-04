@@ -5,7 +5,6 @@ require 'observed/configurable'
 require 'observed/default'
 require 'observed/hash'
 require 'observed/reader'
-require 'observed/writer'
 require 'observed/translator'
 require 'observed/execution_job_factory'
 
@@ -51,7 +50,6 @@ module Observed
     attribute :logger, default: Logger.new(STDOUT, Logger::DEBUG)
 
     def initialize(args)
-      @writer_plugins = args[:writer_plugins] if args[:writer_plugins]
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
       @translator_plugins = args[:translator_plugins] if args[:translator_plugins]
@@ -61,10 +59,6 @@ module Observed
 
     def system
       @system
-    end
-
-    def writer_plugins
-      @writer_plugins || select_named_plugins_of(Observed::Writer)
     end
 
     def observer_plugins
@@ -89,7 +83,6 @@ module Observed
 
     def build
       Observed::Config.new(
-          writers: writers,
           observers: observers,
           reporters: reporters
       )
@@ -104,11 +97,7 @@ module Observed
         args = tag_pattern
         tag_pattern = nil
       end
-      writer = write(args)
-      reporter = if writer
-                   tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
-                   Observed::Default::Reporter.new.configure(tag_pattern: tag_pattern, writer: writer, system: system)
-                 elsif args[:via] || args[:using]
+      reporter = if args[:via] || args[:using]
                    via = args[:via] || args[:using]
                    with = args[:with] || args[:which] || {}
                    with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern, system: system})
@@ -218,30 +207,6 @@ module Observed
       end
 
       convert_to_job(translator)
-    end
-
-    def write(args)
-      to = args[:to]
-      with = args[:with] || args[:which]
-      writer = case to
-               when String
-                 plugin = writer_plugins[to] ||
-                     fail(RuntimeError, %Q|The writer plugin named "#{to}" is not found in "#{writer_plugins}"|)
-                 with = ({logger: @logger}).merge(with)
-                 plugin.new(with)
-               when Observed::Writer
-                 to
-               when nil
-                 nil
-               else
-                 fail "Unexpected type of value for the key :to in: #{args}"
-               end
-      writers << writer if writer
-      writer
-    end
-
-    def writers
-      @writers ||= []
     end
 
     def reporters
