@@ -14,21 +14,21 @@ module Observed
       include Observed::Logging
       include Observed::Reporter::RegexpMatching
 
-      attribute :tag
       attribute :key_path
       attribute :coerce, default: ->(data){ data }
       attribute :rrd
       attribute :step
       attribute :period
 
-      def translate(tag, time, data)
+      def translate(data, options)
+        time = options[:time] || Time.now
         rewrote = update_value_for_key_path(data, key_path) do |v|
           sample = coerce.call(v)
           average = get_cdp_updated_with(time, sample)
           average
         end
         unless fetch_value_for_key_path(rewrote, key_path).nan?
-          [self.tag, time, rewrote]
+          rewrote
         end
       end
 
