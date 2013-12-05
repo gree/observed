@@ -18,18 +18,6 @@ module Observed
       @config
     end
 
-    def report(tag, time, data=nil)
-      if data.nil?
-        data = time
-        time = self.now
-      end
-      reporters.each do |reporter|
-        if reporter.match(tag)
-          reporter.report(tag, time, data)
-        end
-      end
-    end
-
     def run(observation_name=nil, data=nil, options=nil)
       options = { tag: (options && options[:tag]) || observation_name, time: now }.merge(options || {})
       params = [data, options]
@@ -47,10 +35,6 @@ module Observed
 
     def now
       Time.now
-    end
-
-    def logger
-      @logger || fail("BUG? No logger configured")
     end
 
   end
