@@ -130,28 +130,15 @@ module Observed
         observer.configure(args)
       end
 
-      def observe(data=nil)
+      def observe(data=nil, options=nil)
         case observer.method(:observe).parameters.size
           when 0
-            traditional_observe
+            observer.observe
           when 1
-            modern_observe(data)
+            observer.observe data
+          when 2
+            observer.observe data, options
         end
-      end
-
-      private
-
-      def traditional_observe
-        observer.observe
-      end
-
-      def modern_observe(data=nil)
-        observation = if data
-                        observer.observe data
-                      else
-                        observer.observe
-                      end
-        system.report *observation
       end
     end
 
@@ -180,15 +167,15 @@ module Observed
       convert_to_job(observer)
     end
 
-    def translate(tag_pattern=nil, args={}, &block)
+    def translate(args={}, &block)
       translator = if args[:via] || args[:using]
-                     tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
-                   via = args[:via] || args[:using]
-                   with = args[:with] || args[:which] || {}
-                   with = ({logger: @logger}).merge(with).merge({tag_pattern: tag_pattern, system: system})
-                   plugin = translator_plugins[via] ||
-                       fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{translator_plugins}"|)
-                   plugin.new(with)
+                     #tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
+                     via = args[:via] || args[:using]
+                     with = args[:with] || args[:which] || {}
+                     with = ({logger: @logger}).merge(with).merge({system: system})
+                     plugin = translator_plugins[via] ||
+                         fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{translator_plugins}"|)
+                     plugin.new(with)
                    else
                      Observed::ProcTranslator.new &block
                  end

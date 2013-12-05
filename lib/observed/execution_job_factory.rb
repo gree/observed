@@ -59,7 +59,6 @@ module Observed
                    when 1
                      underlying.observe(data)
                    when 2
-                     # Deprecated. This is here for backward compatiblity
                      underlying.observe(data, options)
                    end
           fake_system.reported || result

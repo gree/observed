@@ -107,7 +107,7 @@ describe Observed::ConfigBuilder do
 
   it 'creates translator from translator plugins' do
     time = Time.now
-    translator = subject.translate /foo\.bar/, via: 'my_translator', with: {
+    translator = subject.translate via: 'my_translator', with: {
       tag: 'foo.baz',
       format: -> tag, time, data, f, b { b['bar.baz'] = "foo.bar #{time} #{f[tag]}"; b.build }
     }
