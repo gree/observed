@@ -54,52 +54,40 @@ module Observed
           # For 0.1.0 compatibility
           underlying.configure(system: fake_system)
           underlying.configure(tag: options[:tag]) unless underlying.get_attribute_value(:tag)
-          result = case m.parameters.size
-                   when 0
-                     underlying.observe
-                   when 1
-                     underlying.observe(data)
-                   when 2
-                     underlying.observe(data, options)
-                   end
+          result = dispatch_method m, data, options
           fake_system.reported || result
         }
       elsif underlying.is_a? Observed::Reporter
         @job_factory.job {|data, options|
           options ||= {}
           m = underlying.method(:report)
-          num_parameters = m.parameters.size
-          case num_parameters
-          when 1
-            underlying.report(data)
-          when 2
-            underlying.report(data, options)
-          when 3
-            # Deprecated. This is here for backward compatiblity
-            underlying.report(options[:tag], options[:time], data)
-          else
-            fail "Unexpected number of parameters for the method `report`: #{num_parameters}"
-          end
+          dispatch_method m, data, options
         }
       elsif underlying.is_a? Observed::Translator
         @job_factory.job {|data, options|
           options ||= {}
           m = underlying.method(:translate)
-          num_parameters = m.parameters.size
-          case num_parameters
-          when 1
-            underlying.translate(data)
-          when 2
-            underlying.translate(data, options)
-          when 3
-            # Deprecated. This is here for backward compatiblity
-            underlying.translate(options[:tag], options[:time], data)
-          else
-            fail "Unexpected number of parameters for the method `translate`: #{num_parameters}"
-          end
+          dispatch_method m, data, options
         }
       else
         fail "Unexpected type of object which can not be converted to a job: #{underlying}"
+      end
+    end
+
+    def dispatch_method(m, data, options)
+      num_parameters = m.parameters.size
+      case num_parameters
+      when 0
+        m.call
+      when 1
+        m.call data
+      when 2
+        m.call data, options
+      when 3
+        # Deprecated. This is here for backward compatiblity
+        m.call options[:tag], options[:time], data
+      else
+        fail "Unexpected number of parameters for the method `#{m}`: #{num_parameters}"
       end
     end
 
