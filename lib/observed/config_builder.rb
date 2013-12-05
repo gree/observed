@@ -176,15 +176,16 @@ module Observed
                  else
                    fail "No args valid args (in args=#{args}) or a block given"
                  end
-      observers << observer
       observe_that = convert_to_job(observer)
-      if tag
+      result = if tag
         a = observe_that.then(emit(tag))
         group tag, (group(tag) + [a])
         a
       else
         observe_that
       end
+      observers << result
+      result
     end
 
     def translate(args={}, &block)

@@ -7,8 +7,7 @@ module Observed
     def initialize(args={})
       @config = args[:config] if args[:config]
       @logger = args[:logger] if args[:logger]
-
-
+      @context = args[:context]
     end
 
     def config=(config)
@@ -32,18 +31,18 @@ module Observed
     end
 
     def run(observation_name=nil, data=nil, options=nil)
-
+      options = { tag: (options && options[:tag]) || observation_name, time: now }.merge(options || {})
+      params = [data, options]
       if observation_name
-        observers_to_run = observers.reject { |o| o.tag != observation_name }
-        fail "No configuration found for observation name '#{observation_name}'" if observers_to_run.empty?
+        fail "No configuration found for observation name '#{observation_name}'" if @context.config_builder.group(observation_name).empty?
+        @context.config_builder.run_group(observation_name).send :now, *params
       else
-        observers_to_run = observers
+        observers_to_run = @context.config_builder.observers
+        fail "No configuration found for observation name '#{observation_name}'" if observers_to_run.empty?
+        observers_to_run.each do |o|
+          o.send :now, *params
+        end
       end
-
-      observers_to_run.map do |input|
-        input.observe data
-      end
-
     end
 
     def now

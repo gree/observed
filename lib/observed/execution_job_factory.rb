@@ -24,6 +24,7 @@ module Observed
         options = {tag: tag, time: time}
       end
       options ||= {}
+      options[:tag] ||= tag
       options[:time] ||= now
       @reported = [data, options]
     end
@@ -50,7 +51,9 @@ module Observed
           options ||= {}
           m = underlying.method(:observe)
           fake_system = FakeSystem.new(time: options[:time])
+          # For 0.1.0 compatibility
           underlying.configure(system: fake_system)
+          underlying.configure(tag: options[:tag]) unless underlying.get_attribute_value(:tag)
           result = case m.parameters.size
                    when 0
                      underlying.observe

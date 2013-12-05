@@ -42,7 +42,7 @@ module Observed
     end
 
     def system
-      @system ||= Observed::System.new(logger: logger)
+      @system ||= Observed::System.new(logger: logger, context: self)
     end
 
     def executor

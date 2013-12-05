@@ -14,7 +14,11 @@ describe Observed::System do
     let(:the_config) {
       s = stub('foo')
       s.stubs(reporters: [reporter], translators: [translator])
-      { config: s, logger: Logger.new(STDOUT, Logger::DEBUG) }
+      { config: s, logger: Logger.new(STDOUT, Logger::DEBUG), context: context }
+    }
+
+    let(:context) {
+      Observed::Context.new
     }
 
     let(:reporter) {
@@ -58,23 +62,20 @@ describe Observed::System do
       c
     }
 
+    let(:context) {
+      Observed::Context.new
+    }
+
     let(:the_config) {
       c = stub('config')
       c.stubs(observers: observers)
       c
-      { config: c, logger: Logger.new(STDOUT, Logger::DEBUG) }
+      { config: c, logger: Logger.new(STDOUT, Logger::DEBUG), context: context }
     }
 
     context 'when there is no matching observer for a tag' do
       it 'fails to run' do
         expect { subject.run('foo') }.to raise_error(/No configuration found for observation name 'foo'/)
-      end
-    end
-
-    context 'when there is one or more observers matches the tag' do
-      it 'runs the observer' do
-        observer.expects(:observe).once
-        expect { subject.run('bar') }.to_not raise_error
       end
     end
   end

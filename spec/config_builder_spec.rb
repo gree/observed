@@ -31,7 +31,7 @@ describe Observed::ConfigBuilder do
         content = File.open(path, 'r') do |f|
           f.read
         end
-        system.report(tag, { key => content })
+        { key => content }
       end
     end
     { 'my_file' => my_file }
@@ -85,8 +85,11 @@ describe Observed::ConfigBuilder do
     File.open('foo.txt', 'w') do |f|
       f.write('file content')
     end
-    system.expects(:report).with('foo.bar', { 'content' => 'file content' })
-    expect { subject.build.observers.first.observe }.to_not raise_error
+    the_data = nil
+    subject.build.observers.first.now do |data, options|
+      the_data = data
+    end
+    expect(the_data).to eq({'content' => 'file content'})
   end
 
   #it 'creates default observers from poller plugins' do

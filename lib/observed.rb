@@ -36,10 +36,10 @@ module Observed
       @observed = @context.config_dsl
     end
 
-    def run(tag=nil)
+    def run(tag=nil, data=nil, options=nil)
       sys = @context.system
       sys.config = @observed.config
-      sys.run(tag)
+      sys.send :run, *[tag, data, options].take_while { |a| a != nil }
     end
 
     def configure(*args)

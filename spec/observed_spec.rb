@@ -248,6 +248,34 @@ describe Observed do
 
         subject.run_group('hoge').now({foo:1}, {tag: 't', time: t, out: out})
       end
+      it 'provides a short-cut for running a group of observations' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.observe 'fuga', via: 'test1'
+
+        subject.receive(/fuga/)
+          .then(subject.translate via: 'test1')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        subject.run('fuga', {foo:1}, {tag: 't', time: t, out: out})
+      end
+      it 'provides the default values for the option `tag` and `time`' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.observe 't', via: 'test1'
+
+        subject.receive(/t/)
+          .then(subject.translate via: 'test1')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        ::Time.stubs(now: t)
+
+        subject.run('t', {foo:1}, {out: out})
+      end
     end
 
   end
