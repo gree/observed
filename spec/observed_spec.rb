@@ -169,6 +169,24 @@ describe Observed do
 
         observe_then_send.now({foo:1}, {tag: 't', time: t})
       end
+      it 'can be used to send and receive tagged events with the default event bus' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        observe_then_send = (subject.observe via: 'test1')
+          .then(subject.emit 'foo')
+
+        subject.receive(/foo/)
+          .then(subject.translate via: 'test1')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        t = Time.now
+
+        out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+
+        observe_then_send.now({foo:1}, {tag: 't', time: t})
+      end
     end
 
   end

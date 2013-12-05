@@ -188,6 +188,14 @@ module Observed
       convert_to_job(translator)
     end
 
+    def emit(tag)
+      @context.jobbed_event_bus.pipe_to_emit(tag)
+    end
+
+    def receive(pattern)
+      @context.jobbed_event_bus.receive(pattern)
+    end
+
     def reporters
       @reporters ||= []
     end
@@ -199,7 +207,7 @@ module Observed
     private
 
     def convert_to_job(underlying)
-      @execution_job_factory ||= Observed::ExecutionJobFactory.new(executor: @context.executor)
+      @execution_job_factory ||= @context.execution_job_factory
       @execution_job_factory.convert_to_job(underlying)
     end
   end

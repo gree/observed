@@ -40,9 +40,7 @@ module Observed
   class ExecutionJobFactory
 
     def initialize(args={})
-      args_copy = args.clone
-      args_copy[:executor] ||= Observed::BlockingJobExecutor.new
-      @job_factory = Observed::JobFactory.new(args_copy)
+      @job_factory = args[:job_factory] || Observed::JobFactory.new(executor: Observed::BlockingJobExecutor.new)
     end
 
     # Convert the observer/translator/reporter to a job

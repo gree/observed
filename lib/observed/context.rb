@@ -48,6 +48,18 @@ module Observed
       @executor ||= Observed::BlockingJobExecutor.new
     end
 
+    def jobbed_event_bus
+      @event_bus ||= Observed::JobbedEventBus.new(job_factory: job_factory)
+    end
+
+    def job_factory
+      @job_factory ||= Observed::JobFactory.new(executor: executor)
+    end
+
+    def execution_job_factory
+      @execution_job_factory ||= Observed::ExecutionJobFactory.new(job_factory: job_factory)
+    end
+
     def config_builder
       @config_builder ||= Observed::ConfigBuilder.new(system: system, logger: logger, context: self)
     end
