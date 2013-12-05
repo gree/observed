@@ -4,6 +4,7 @@ require 'observed/system'
 require 'observed/config_builder'
 require 'observed/config_dsl'
 require 'observed/job'
+require 'observed/jobbed_event_bus'
 
 module Observed
   # The run context of an Observed system.

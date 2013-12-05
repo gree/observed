@@ -12,23 +12,22 @@ module Observed
     def pipe_to_emit(tag)
       @job_factory.job { |*params|
         self.emit(tag, *params)
+        params
       }
     end
     def emit(tag, *params)
       @bus.emit tag, *params
     end
     def receive(pattern)
-      @mutex.synchronize do
-        @receives[pattern] ||= @job_factory.mutable_job {|data, options|
-          [data, options]
-        }
-      end
+      job = @job_factory.mutable_job {|data, options|
+        [data, options]
+      }
       @bus.on_receive(pattern) do |*params|
         @mutex.synchronize do
-          @receives[pattern].now(*params)
+          job.now(*params)
         end
       end
-      @receives[pattern]
+      job
     end
   end
 end

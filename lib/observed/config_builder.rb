@@ -151,6 +151,7 @@ module Observed
     def observe(tag=nil, args={}, &block)
       if tag.is_a? ::Hash
         args = tag
+        tag = nil
       end
       observer = if args[:via] || args[:using]
                    via = args[:via] || args[:using] ||
@@ -170,7 +171,12 @@ module Observed
                    fail "No args valid args (in args=#{args}) or a block given"
                  end
       observers << observer
-      convert_to_job(observer)
+      observe_that = convert_to_job(observer)
+      if tag
+        observe_that.then(emit(tag))
+      else
+        observe_that
+      end
     end
 
     def translate(args={}, &block)
