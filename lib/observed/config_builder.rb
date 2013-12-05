@@ -219,6 +219,10 @@ module Observed
       end
     end
 
+    def run_group(name)
+      @context.job_factory.parallel(group(name))
+    end
+
     def reporters
       @reporters ||= []
     end

@@ -137,6 +137,10 @@ module Observed
     def mutable_job(&block)
       MutableJob.new(job(&block))
     end
+
+    def parallel(jobs)
+      ParallelJob.new(jobs)
+    end
   end
 
   class JobExecutor

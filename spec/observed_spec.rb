@@ -235,6 +235,19 @@ describe Observed do
           observe_something.now({foo:1}, {tag: 't', time: t, out: out})
         end
       end
+      it 'provides the way to run a group of observations in single method call' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.observe 'hoge', via: 'test1'
+
+        subject.receive(/hoge/)
+        .then(subject.translate via: 'test1')
+        .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        subject.run_group('hoge').now({foo:1}, {tag: 't', time: t, out: out})
+      end
     end
 
   end
