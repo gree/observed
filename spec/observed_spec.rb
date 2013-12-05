@@ -83,12 +83,13 @@ describe Observed do
         extend Observed
       end
     }
+    let(:out) {
+      mock('out')
+    }
+    let(:common) {
+      'common'
+    }
     it 'can be used to define components and trigger them immediately' do
-
-      out = mock('out')
-
-      common = 'common'
-
       report_to_out = subject.report do |data, options|
         out.write data.merge(baz2:data[:baz]).merge(r3: common).merge(options)
       end
