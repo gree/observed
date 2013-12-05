@@ -203,6 +203,23 @@ describe Observed do
 
         observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
       end
+      it 'provides the way to group up observations' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.group :a, [
+          (subject.observe via: 'test1')
+            .then(subject.translate via: 'test1')
+            .then(subject.emit('baz'))
+        ]
+
+        subject.report /baz/, via: 'test1', with: {out: out, common: common}
+
+        subject.group(:a).each do |observe_something|
+          observe_something.now({foo:1}, {tag: 't', time: t, out: out})
+        end
+      end
     end
 
   end

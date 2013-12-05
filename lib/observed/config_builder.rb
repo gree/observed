@@ -206,6 +206,13 @@ module Observed
       @context.jobbed_event_bus.receive(pattern)
     end
 
+    # Updates or get the observations belongs to the group named `name`
+    def group(name, observations=nil)
+      @observations ||= {}
+      @observations[name] = observations if observations
+      @observations[name]
+    end
+
     def reporters
       @reporters ||= []
     end
