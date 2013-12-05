@@ -114,38 +114,62 @@ describe Observed do
       observe_then_translate_then_report.now({foo:1}, {tag: 't', time: t})
 
     end
-    it 'can be used to define components from plugins and trigger them immediately' do
-      class TestObserver < Observed::Observer
-        plugin_name 'test1'
-        def observe(data, options)
-          data.merge({foo2:data[:foo],bar:2})
+    context 'with plugins' do
+      before {
+        class TestObserver < Observed::Observer
+          plugin_name 'test1'
+          def observe(data, options)
+            data.merge({foo2:data[:foo],bar:2})
+          end
         end
-      end
-      class TestTranslator < Observed::Translator
-        plugin_name 'test1'
-        def translate(data, options)
-          data.merge({bar2:data[:bar],baz:3})
+        class TestTranslator < Observed::Translator
+          plugin_name 'test1'
+          def translate(data, options)
+            data.merge({bar2:data[:bar],baz:3})
+          end
         end
-      end
-      class TestReporter < Observed::Reporter
-        plugin_name 'test1'
-        attribute :out
-        attribute :common
-        include Observed::Reporter::RegexpMatching
-        def report(data, options)
-          out.write data.merge({baz2:data[:baz],r3:common}.merge(options))
+        class TestReporter < Observed::Reporter
+          plugin_name 'test1'
+          attribute :out
+          attribute :common
+          include Observed::Reporter::RegexpMatching
+          def report(data, options)
+            out.write data.merge({baz2:data[:baz],r3:common}.merge(options))
+          end
         end
-      end
-
-      observe_then_translate_then_report = (subject.observe 'foo', via: 'test1')
+      }
+      it 'can be used to define components from plugins and trigger them immediately' do
+        observe_then_translate_then_report = (subject.observe 'foo', via: 'test1')
         .then(subject.translate via: 'test1')
         .then(subject.report via: 'test1', with: {out: out, common: common})
 
-      t = Time.now
+        t = Time.now
 
-      out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+        out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
 
-      observe_then_translate_then_report.now({foo:1}, {tag: 't', time: t})
+        observe_then_translate_then_report.now({foo:1}, {tag: 't', time: t})
+      end
+      it 'can be used to send and receive tagged events' do
+        require 'observed/job'
+        require 'observed/jobbed_event_bus'
+        executor = Observed::BlockingJobExecutor.new
+        job_factory = Observed::JobFactory.new(executor: executor)
+        bus = Observed::JobbedEventBus.new(job_factory: job_factory)
+
+        observe_then_send = (subject.observe via: 'test1')
+          .then(bus.pipe_to_emit 'foo')
+
+        bus.receive(/foo/)
+          .then(subject.translate via: 'test1')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        t = Time.now
+
+        out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+
+        observe_then_send.now({foo:1}, {tag: 't', time: t})
+      end
     end
+
   end
 end

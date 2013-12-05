@@ -148,6 +148,9 @@ module Observed
     # use or which reader plugin to use (in combination with the default observer plugin) (2) initialization parameters
     # to instantiate the observer/reader plugin
     def observe(tag=nil, args={}, &block)
+      if tag.is_a? ::Hash
+        args = tag
+      end
       observer = if args[:via] || args[:using]
                    via = args[:via] || args[:using] ||
                        fail(RuntimeError, %Q|Missing observer plugin name for the tag "#{tag}" in "#{args}"|)
@@ -160,8 +163,10 @@ module Observed
                      observer: observer,
                      tag: tag
                    )
-                 else
+                 elsif block_given?
                    Observed::ProcObserver.new &block
+                 else
+                   fail "No args valid args (in args=#{args}) or a block given"
                  end
       observers << observer
       convert_to_job(observer)

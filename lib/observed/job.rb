@@ -109,8 +109,6 @@ module Observed
           @listener.on_result(result, options)
         elsif result.size == 2
           @listener.on_result(*result)
-        else
-          fail 'Unexpected number of elements in the result array: #{result}'
         end
       end
     end
