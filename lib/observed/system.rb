@@ -31,7 +31,7 @@ module Observed
       end
     end
 
-    def run(observation_name=nil, data=nil)
+    def run(observation_name=nil, data=nil, options=nil)
 
       if observation_name
         observers_to_run = observers.reject { |o| o.tag != observation_name }

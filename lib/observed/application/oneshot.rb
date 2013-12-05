@@ -29,9 +29,8 @@ module Observed
       end
 
       class << self
-        def from_argv(argv)
-
-          command_line_args = argv.dup
+        def parse_argv!(argv)
+          command_line_args = argv
 
           args = {}
 
@@ -52,8 +51,13 @@ module Observed
             fail InvalidArgumentError, "Invalid number of arguments #{command_line_args.size} where arguments are #{command_line_args}"
           end
 
-          args[:config_file] = command_line_args.first
+          args[:config_file] = command_line_args.shift
 
+          args
+        end
+
+        def from_argv(argv)
+          args = parse_argv!(argv.dup)
           create(args)
         end
 
