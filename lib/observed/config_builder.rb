@@ -117,7 +117,11 @@ module Observed
       end
 
       reporters << reporter
-      convert_to_job(reporter)
+      report_it = convert_to_job(reporter)
+      if tag_pattern
+        receive(tag_pattern).then(report_it)
+      end
+      report_it
     end
 
     class ObserverCompatibilityAdapter < Observed::Observer

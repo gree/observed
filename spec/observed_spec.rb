@@ -86,21 +86,16 @@ describe Observed do
     let(:t) {
       Time.now
     }
-    let(:out) {
-      out = mock('out')
-      out
-        .expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
-        .at_least_once
-      out
-    }
     let(:common) {
       'common'
     }
-    it 'can be used to define components and trigger them immediately' do
-      out = mock('out')
+    let(:out) {
+      out = mock('out1')
       out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+        .at_least_once
       out
-
+    }
+    it 'can be used to define components and trigger them immediately' do
       report_to_out = subject.report do |data, options|
         out.write data.merge(baz2:data[:baz]).merge(r3: common).merge(options)
       end
@@ -192,6 +187,19 @@ describe Observed do
         subject.receive(/foo/)
           .then(subject.translate via: 'test1')
           .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
+      end
+      it 'provides the way to receive the tagged events with a bit shorter code' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        observe_then_send = (subject.observe via: 'test1')
+          .then(subject.translate via: 'test1')
+          .then(subject.emit('bar'))
+
+        subject.report /bar/, via: 'test1', with: {out: out, common: common}
 
         observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
       end

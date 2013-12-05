@@ -1,4 +1,5 @@
 require 'logger'
+require 'thread'
 
 module Observed
   class Job
@@ -17,6 +18,7 @@ module Observed
   class MutableJob
     def initialize(current_job)
       @current_job = current_job
+      @mutex = Mutex.new
     end
     def now(data={}, options=nil)
       @current_job.now(data, options) do |data, options2|
@@ -24,7 +26,9 @@ module Observed
       end
     end
     def then(*jobs)
-      @current_job = @current_job.then(*jobs)
+      @mutex.synchronize do
+        @current_job = @current_job.then(*jobs)
+      end
       self
     end
   end
