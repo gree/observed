@@ -108,15 +108,6 @@ module Observed
                  else
                    fail "Invalid combination of arguments: #{tag_pattern} #{args}"
                  end
-      begin
-        reporter.match('test')
-      rescue => e
-        fail "A mis-configured reporter plugin found: #{reporter}"
-      rescue NotImplementedError => e
-        builtin_methods = Object.methods
-        info = (reporter.methods - builtin_methods).map {|sym| reporter.method(sym) }.map(&:source_location).compact
-        fail "Incomplete reporter plugin found: #{reporter}, defined in: #{info}"
-      end
 
       reporters << reporter
       report_it = convert_to_job(reporter)
