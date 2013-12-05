@@ -7,11 +7,16 @@ describe Observed::ConfigBuilder do
 
   subject {
     Observed::ConfigBuilder.new(
+        context: context,
         observer_plugins: observer_plugins,
         reporter_plugins: reporter_plugins,
         translator_plugins: translator_plugins,
         system: system
     )
+  }
+
+  let(:context) {
+    Observed::Context.new
   }
 
   let(:system) {

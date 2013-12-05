@@ -8,10 +8,14 @@ require 'observed/config_builder'
 describe Observed::ConfigDSL do
   subject {
     Observed::ConfigDSL.new(builder: Observed::ConfigBuilder.new(
+        context: context,
         observer_plugins: observer_plugins,
         reporter_plugins: reporter_plugins,
         system: sys
     ))
+  }
+  let(:context) {
+    Observed::Context.new
   }
   let(:foo) {
     Class.new(Observed::Observer) do

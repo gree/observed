@@ -3,6 +3,7 @@ require 'logger'
 require 'observed/system'
 require 'observed/config_builder'
 require 'observed/config_dsl'
+require 'observed/job'
 
 module Observed
   # The run context of an Observed system.
@@ -24,6 +25,8 @@ module Observed
         Logger.new(logger_out)
       end
 
+      @executor = args[:executor]
+
       set_log_level_to_debug(!!args[:debug])
 
       if args[:config_file]
@@ -41,8 +44,12 @@ module Observed
       @system ||= Observed::System.new(logger: logger)
     end
 
+    def executor
+      @executor ||= Observed::BlockingJobExecutor.new
+    end
+
     def config_builder
-      @config_builder ||= Observed::ConfigBuilder.new(system: system, logger: logger)
+      @config_builder ||= Observed::ConfigBuilder.new(system: system, logger: logger, context: self)
     end
 
     def config_dsl

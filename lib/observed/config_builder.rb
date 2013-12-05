@@ -46,6 +46,7 @@ module Observed
     attribute :logger, default: Logger.new(STDOUT, Logger::DEBUG)
 
     def initialize(args)
+      @context = args[:context]
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
       @translator_plugins = args[:translator_plugins] if args[:translator_plugins]
@@ -157,7 +158,7 @@ module Observed
                    with = args[:with] || args[:which] || {}
                    plugin = observer_plugins[via] ||
                        fail(RuntimeError, %Q|The observer plugin named "#{via}" is not found in "#{observer_plugins}"|)
-                   observer = plugin.new(({logger: @logger}).merge(with).merge(tag: tag, system: system))
+                   observer = plugin.new(({logger: logger}).merge(with).merge(tag: tag, system: system))
                    ObserverCompatibilityAdapter.new(
                      system: system,
                      observer: observer,
@@ -177,7 +178,7 @@ module Observed
                      #tag_pattern || fail("Tag pattern missing: #{tag_pattern} where args: #{args}")
                      via = args[:via] || args[:using]
                      with = args[:with] || args[:which] || {}
-                     with = ({logger: @logger}).merge(with).merge({system: system})
+                     with = ({logger: logger}).merge(with).merge({system: system})
                      plugin = translator_plugins[via] ||
                          fail(RuntimeError, %Q|The reporter plugin named "#{via}" is not found in "#{translator_plugins}"|)
                      plugin.new(with)
@@ -198,7 +199,7 @@ module Observed
     private
 
     def convert_to_job(underlying)
-      @execution_job_factory ||= Observed::ExecutionJobFactory.new
+      @execution_job_factory ||= Observed::ExecutionJobFactory.new(executor: @context.executor)
       @execution_job_factory.convert_to_job(underlying)
     end
   end
