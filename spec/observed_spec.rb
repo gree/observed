@@ -220,6 +220,21 @@ describe Observed do
           observe_something.now({foo:1}, {tag: 't', time: t, out: out})
         end
       end
+      it 'provides the way to group up observations by their tags' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.observe 'hoge', via: 'test1'
+
+        subject.receive(/hoge/)
+          .then(subject.translate via: 'test1')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        subject.group('hoge').each do |observe_something|
+          observe_something.now({foo:1}, {tag: 't', time: t, out: out})
+        end
+      end
     end
 
   end

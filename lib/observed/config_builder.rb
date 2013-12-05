@@ -1,4 +1,5 @@
 require 'logger'
+require 'thread'
 
 require 'observed/config'
 require 'observed/configurable'
@@ -46,6 +47,7 @@ module Observed
     attribute :logger, default: Logger.new(STDOUT, Logger::DEBUG)
 
     def initialize(args)
+      @group_mutex = ::Mutex.new
       @context = args[:context]
       @observer_plugins = args[:observer_plugins] if args[:observer_plugins]
       @reporter_plugins = args[:reporter_plugins] if args[:reporter_plugins]
@@ -177,7 +179,9 @@ module Observed
       observers << observer
       observe_that = convert_to_job(observer)
       if tag
-        observe_that.then(emit(tag))
+        a = observe_that.then(emit(tag))
+        group tag, (group(tag) + [a])
+        a
       else
         observe_that
       end
@@ -208,9 +212,11 @@ module Observed
 
     # Updates or get the observations belongs to the group named `name`
     def group(name, observations=nil)
-      @observations ||= {}
-      @observations[name] = observations if observations
-      @observations[name]
+      @group_mutex.synchronize do
+        @observations ||= {}
+        @observations[name] = observations if observations
+        @observations[name] || []
+      end
     end
 
     def reporters
