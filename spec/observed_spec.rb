@@ -93,7 +93,7 @@ describe Observed do
       report_to_out = subject.report do |data, options|
         out.write data.merge(baz2:data[:baz]).merge(r3: common).merge(options)
       end
-      foo = (
+      observe_then_translate_then_report = (
         subject.observe 'foo' do |data|
           data.merge(foo2:data[:foo],bar:2)
         end
@@ -111,7 +111,7 @@ describe Observed do
       out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
         .twice
 
-      foo.now({foo:1}, {tag: 't', time: t})
+      observe_then_translate_then_report.now({foo:1}, {tag: 't', time: t})
 
     end
     it 'can be used to define components from plugins and trigger them immediately' do
@@ -137,7 +137,7 @@ describe Observed do
         end
       end
 
-      foo = (subject.observe 'foo', via: 'test1')
+      observe_then_translate_then_report = (subject.observe 'foo', via: 'test1')
         .then(subject.translate via: 'test1')
         .then(subject.report via: 'test1', with: {out: out, common: common})
 
@@ -145,7 +145,7 @@ describe Observed do
 
       out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
 
-      foo.now({foo:1}, {tag: 't', time: t})
+      observe_then_translate_then_report.now({foo:1}, {tag: 't', time: t})
     end
   end
 end
