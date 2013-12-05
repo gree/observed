@@ -53,16 +53,6 @@ module Observed
       @logger || fail("BUG? No logger configured")
     end
 
-    private
-
-    def observers
-      config.observers
-    end
-
-    def reporters
-      config.reporters
-    end
-
   end
 
 end

@@ -9,47 +9,6 @@ describe Observed::System do
     Observed::System.new(the_config)
   }
 
-  context 'with reporters configured' do
-
-    let(:the_config) {
-      s = stub('foo')
-      s.stubs(reporters: [reporter], translators: [translator])
-      { config: s, logger: Logger.new(STDOUT, Logger::DEBUG), context: context }
-    }
-
-    let(:context) {
-      Observed::Context.new
-    }
-
-    let(:reporter) {
-      s = stub('reporter')
-      s.stubs(match: true)
-      s
-    }
-
-    let(:translator) {
-      s = stub('translator')
-      s.stubs(match: true)
-      s
-    }
-
-    let(:the_time) {
-      Time.now
-    }
-
-    before {
-      Time.stubs(now: the_time)
-    }
-
-    context 'when the time of a report is omitted' do
-      it 'complements the current time' do
-        reporter.expects(:report).with('the_tag', the_time, {data:1})
-        subject.report('the_tag', {data:1})
-      end
-    end
-
-  end
-
   context 'with observers configured' do
 
     let(:observers) {
