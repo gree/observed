@@ -22,7 +22,10 @@ Feature: Integration via single Ruby source
         $count += 1
         system.report(tag, {foo:1})
         if $count >= 2
-          exit
+          Thread.start {
+            sleep 1
+            exit
+          }
         end
       end
     end
