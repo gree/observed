@@ -47,7 +47,7 @@ module Observed
 
           opts.parse!(command_line_args)
 
-          if command_line_args.size != 1
+          unless command_line_args.size == 1 || command_line_args.size == 2
             fail InvalidArgumentError, "Invalid number of arguments #{command_line_args.size} where arguments are #{command_line_args}"
           end
 
