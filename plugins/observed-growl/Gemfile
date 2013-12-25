@@ -1,0 +1,6 @@
+# A sample Gemfile
+source "https://rubygems.org"
+
+gem 'observed', :path => "../.."
+gem 'jsonpath'
+gem 'ruby_gntp'
