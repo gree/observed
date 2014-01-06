@@ -11,12 +11,12 @@ module Observed
     end
     def pipe_to_emit(tag)
       @job_factory.job { |*params|
-        self.emit(tag, *params)
+        @bus.emit tag, *params
         params
       }
     end
     def emit(tag, *params)
-      @bus.emit tag, *params
+      pipe_to_emit(tag)
     end
     def receive(pattern)
       job = @job_factory.mutable_job {|data, options|

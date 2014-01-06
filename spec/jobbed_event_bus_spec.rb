@@ -20,12 +20,12 @@ describe Observed::JobbedEventBus do
     Observed::JobbedEventBus.new(job_factory: factory)
   }
   it 'should invoke jobs when the corresponding events are emitted' do
-    bus.emit('foo')
+    bus.emit('foo').now
     bus.receive(/^bar$/).then(the_job)
-    bus.emit('baz')
+    bus.emit('baz').now
     out.expects(:write).with({a:1}, {b:2})
-    bus.emit('bar', {a:1}, {b:2})
-    bus.emit('blah')
+    bus.emit('bar').now({a:1}, {b:2})
+    bus.emit('blah').now
   end
   it 'should return the job to emit events' do
     bus.pipe_to_emit('foo').now
