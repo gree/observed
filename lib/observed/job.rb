@@ -15,6 +15,12 @@ module Observed
                  end
       SequenceJob.new(self, next_job)
     end
+
+    def compose(first_job)
+      second_job = self
+
+      first_job.then(second_job)
+    end
   end
 
   class MutableJob

@@ -324,6 +324,23 @@ describe Observed do
 
         subject.emit('kuroko3').now({foo:1, foo2:1, bar:2, bar2:2, baz: 3, baz2:3, r3: common}, {out: out, tag: 't', time: Time.now})
       end
+      it 'allows a kind of reactive programming' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.report(via: 'test1', with: {out: out, common: common}).compose(
+            subject.translate(via: 'test1').compose(
+                subject.observe(via: 'test1').compose(
+                    subject.receive('kuroko4')
+                )
+            )
+        )
+
+        ::Time.stubs(now: t)
+
+        subject.emit('kuroko4').now({foo:1, foo2:1, bar:2, bar2:2, baz: 3, baz2:3, r3: common}, {out: out, tag: 't', time: Time.now})
+      end
     end
 
   end
