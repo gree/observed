@@ -152,10 +152,10 @@ describe Observed do
       end
       it 'can be used to send and receive tagged events' do
         require 'observed/job'
-        require 'observed/jobbed_event_bus'
+        require 'observed/event_bus'
         executor = Observed::BlockingJobExecutor.new
         job_factory = Observed::JobFactory.new(executor: executor)
-        bus = Observed::JobbedEventBus.new(job_factory: job_factory)
+        bus = Observed::EventBus.new(job_factory: job_factory)
 
         observe_then_send = (subject.observe via: 'test1')
           .then(bus.pipe_to_emit 'foo1')

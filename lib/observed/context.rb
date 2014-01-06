@@ -4,7 +4,7 @@ require 'observed/system'
 require 'observed/config_builder'
 require 'observed/config_dsl'
 require 'observed/job'
-require 'observed/jobbed_event_bus'
+require 'observed/event_bus'
 
 module Observed
   # The run context of an Observed system.
@@ -50,7 +50,7 @@ module Observed
     end
 
     def jobbed_event_bus
-      @event_bus ||= Observed::JobbedEventBus.new(job_factory: job_factory)
+      @event_bus ||= Observed::EventBus.new(job_factory: job_factory)
     end
 
     def job_factory
