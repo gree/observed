@@ -176,6 +176,7 @@ module Observed
         observe_that
       end
       observers << result
+      result.name = "observe"
       result
     end
 
@@ -191,11 +192,15 @@ module Observed
                    else
                      Observed::ProcTranslator.new &block
                  end
-      convert_to_job(translator)
+      job = convert_to_job(translator)
+      job.name = "translate"
+      job
     end
 
     def emit(tag)
-      @context.jobbed_event_bus.pipe_to_emit(tag)
+      e = @context.jobbed_event_bus.pipe_to_emit(tag)
+      e.name = "emit to #{tag}"
+      e
     end
 
     def receive(pattern)

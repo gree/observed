@@ -1,9 +1,10 @@
 require 'thread'
+require 'monitor'
 
 module Observed
   class EventBus
     def initialize
-      @mutex = ::Mutex.new
+      @monitor = ::Monitor.new
       @subscribers = []
     end
     def emit(tag, *params)
@@ -11,7 +12,7 @@ module Observed
     end
 
     def on_receive(pattern, &block)
-      @mutex.synchronize do
+      @monitor.synchronize do
         @subscribers.push [pattern, block]
       end
     end
@@ -19,7 +20,7 @@ module Observed
     private
 
     def handle_event(tag, *params)
-      @mutex.synchronize do
+      @monitor.synchronize do
         @subscribers.each do |pattern, s|
           if pattern.match(tag)
             s.call *params

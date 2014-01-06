@@ -3,6 +3,8 @@ require 'thread'
 
 module Observed
   class Job
+    attr_accessor :name
+
     def then(*jobs)
       next_job = if jobs.size == 1
                    jobs.first

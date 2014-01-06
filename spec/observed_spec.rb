@@ -79,9 +79,9 @@ describe Observed do
 
   describe 'when included' do
     subject {
-      Module.new do
-        extend Observed
-      end
+      ctx = ::Object.new
+      ctx.extend Observed
+      ctx
     }
     let(:t) {
       Time.now
@@ -91,11 +91,11 @@ describe Observed do
     }
     let(:out) {
       out = mock('out1')
-      out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
-        .at_least_once
       out
     }
     it 'can be used to define components and trigger them immediately' do
+      out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+        .at_least_once
       report_to_out = subject.report do |data, options|
         out.write data.merge(baz2:data[:baz]).merge(r3: common).merge(options)
       end
@@ -139,6 +139,9 @@ describe Observed do
             out.write data.merge({baz2:data[:baz],r3:common}.merge(options))
           end
         end
+
+        out.expects(:write).with(tag:'t', foo:1, foo2:1, bar:2, bar2:2, baz:3, baz2:3, r3:'common', time: t)
+          .at_least_once
       }
       it 'can be used to define components from plugins and trigger them immediately' do
         observe_then_translate_then_report = (subject.observe via: 'test1')
@@ -155,9 +158,9 @@ describe Observed do
         bus = Observed::JobbedEventBus.new(job_factory: job_factory)
 
         observe_then_send = (subject.observe via: 'test1')
-          .then(bus.pipe_to_emit 'foo')
+          .then(bus.pipe_to_emit 'foo1')
 
-        bus.receive(/foo/)
+        bus.receive(/foo1/)
           .then(subject.translate via: 'test1')
           .then(subject.report via: 'test1', with: {common: common})
 
@@ -169,9 +172,9 @@ describe Observed do
         subject.configure executor: Observed::BlockingJobExecutor.new
 
         observe_then_send = (subject.observe via: 'test1')
-          .then(subject.emit 'foo')
+          .then(subject.emit 'foo2')
 
-        subject.receive(/foo/)
+        subject.receive(/foo2/)
           .then(subject.translate via: 'test1')
           .then(subject.report via: 'test1', with: {common: common})
 
@@ -182,9 +185,9 @@ describe Observed do
 
         subject.configure executor: Observed::BlockingJobExecutor.new
 
-        observe_then_send = (subject.observe 'foo', via: 'test1')
+        observe_then_send = (subject.observe 'foo3', via: 'test1')
 
-        subject.receive(/foo/)
+        subject.receive(/foo3/)
           .then(subject.translate via: 'test1')
           .then(subject.report via: 'test1', with: {out: out, common: common})
 
@@ -275,6 +278,51 @@ describe Observed do
         ::Time.stubs(now: t)
 
         subject.run('t', {foo:1}, {out: out})
+      end
+      it 'allows to use emit/receive for subscribing to internal events' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.receive('foo123')
+          .then(
+            (subject.observe via: 'test1')
+              .then(subject.translate via: 'test1')
+              .then(subject.report via: 'test1', with: {out: out, common: common})
+          )
+
+        ::Time.stubs(now: t)
+
+        subject.emit('foo123').now({foo:1}, {out: out, tag: 't', time: Time.now})
+      end
+      it 'allows to use emit/receive for subscribing to internal events to trigger receive/translate/report' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.receive('kuroko1')
+          .then(subject.observe via: 'test1')
+          .then(subject.translate via: 'test1')
+          .then(subject.emit 'kuroko2')
+
+        subject.receive('kuroko2')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        ::Time.stubs(now: t)
+
+        subject.emit('kuroko1').now({foo:1}, {out: out, tag: 't', time: Time.now})
+      end
+      it 'allows to just report something' do
+        require 'observed/job'
+
+        subject.configure executor: Observed::BlockingJobExecutor.new
+
+        subject.receive('kuroko3')
+          .then(subject.report via: 'test1', with: {out: out, common: common})
+
+        ::Time.stubs(now: t)
+
+        subject.emit('kuroko3').now({foo:1, foo2:1, bar:2, bar2:2, baz: 3, baz2:3, r3: common}, {out: out, tag: 't', time: Time.now})
       end
     end
 

@@ -23,9 +23,7 @@ module Observed
         [data, options]
       }
       @bus.on_receive(pattern) do |*params|
-        @mutex.synchronize do
-          job.now(*params)
-        end
+        job.now(*params)
       end
       job
     end
