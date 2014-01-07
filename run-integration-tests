@@ -8,6 +8,8 @@
 rvm gemset create observed-test
 rvm gemset use observed-test
 
+gem install bundler
+
 observed_dir=`dirname $0`
 
 cd $observed_dir
