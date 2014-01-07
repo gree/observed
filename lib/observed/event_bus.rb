@@ -6,23 +6,23 @@ module Observed
     def initialize(args={})
       @bus = Observed::BasicEventBus.new
       @receives = {}
-      @job_factory = args[:job_factory] || fail("The parameter :job_factory is missing in args(#{args}")
+      @task_factory = args[:task_factory] || fail("The parameter :task_factory is missing in args(#{args}")
       @mutex = ::Mutex.new
     end
     def emit(tag, *params)
-      @job_factory.job { |*params|
+      @task_factory.task { |*params|
         @bus.emit tag, *params
         params
       }
     end
     def receive(pattern)
-      job = @job_factory.mutable_job {|data, options|
+      task = @task_factory.mutable_task {|data, options|
         [data, options]
       }
       @bus.on_receive(pattern) do |*params|
-        job.now(*params)
+        task.now(*params)
       end
-      job
+      task
     end
   end
 end

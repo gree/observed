@@ -151,11 +151,11 @@ describe Observed do
         observe_then_translate_then_report.now({foo:1}, {tag: 't', time: t, out: out})
       end
       it 'can be used to send and receive tagged events' do
-        require 'observed/job'
+        require 'observed/task'
         require 'observed/event_bus'
-        executor = Observed::BlockingJobExecutor.new
-        job_factory = Observed::JobFactory.new(executor: executor)
-        bus = Observed::EventBus.new(job_factory: job_factory)
+        executor = Observed::BlockingExecutor.new
+        task_factory = Observed::TaskFactory.new(executor: executor)
+        bus = Observed::EventBus.new(task_factory: task_factory)
 
         observe_then_send = (subject.observe via: 'test1')
           .then(bus.emit 'foo1')
@@ -167,9 +167,9 @@ describe Observed do
         observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
       end
       it 'can be used to send and receive tagged events with the default event bus' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         observe_then_send = (subject.observe via: 'test1')
           .then(subject.emit 'foo2')
@@ -181,9 +181,9 @@ describe Observed do
         observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
       end
       it 'provides the way to send the tagged events with a bit shorter code' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         observe_then_send = (subject.observe 'foo3', via: 'test1')
 
@@ -194,9 +194,9 @@ describe Observed do
         observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
       end
       it 'provides the way to receive the tagged events with a bit shorter code' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         observe_then_send = (subject.observe via: 'test1')
           .then(subject.translate via: 'test1')
@@ -207,9 +207,9 @@ describe Observed do
         observe_then_send.now({foo:1}, {tag: 't', time: t, out: out})
       end
       it 'provides the way to group up observations' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.group :a, [
           (subject.observe via: 'test1')
@@ -224,9 +224,9 @@ describe Observed do
         end
       end
       it 'provides the way to group up observations by their tags' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.observe 'hoge', via: 'test1'
 
@@ -239,9 +239,9 @@ describe Observed do
         end
       end
       it 'provides the way to run a group of observations in single method call' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.observe 'hoge', via: 'test1'
 
@@ -252,9 +252,9 @@ describe Observed do
         subject.run_group('hoge').now({foo:1}, {tag: 't', time: t, out: out})
       end
       it 'provides a short-cut for running a group of observations' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.observe 'fuga', via: 'test1'
 
@@ -265,9 +265,9 @@ describe Observed do
         subject.run('fuga', {foo:1}, {tag: 't', time: t, out: out})
       end
       it 'provides the default values for the option `tag` and `time`' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.observe 't', via: 'test1'
 
@@ -280,9 +280,9 @@ describe Observed do
         subject.run('t', {foo:1}, {out: out})
       end
       it 'allows to use emit/receive for subscribing to internal events' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.receive('foo123')
           .then(
@@ -296,9 +296,9 @@ describe Observed do
         subject.emit('foo123').now({foo:1}, {out: out, tag: 't', time: Time.now})
       end
       it 'allows to use emit/receive for subscribing to internal events to trigger receive/translate/report' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.receive('kuroko1')
           .then(subject.observe via: 'test1')
@@ -313,9 +313,9 @@ describe Observed do
         subject.emit('kuroko1').now({foo:1}, {out: out, tag: 't', time: Time.now})
       end
       it 'allows to just report something' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.receive('kuroko3')
           .then(subject.report via: 'test1', with: {out: out, common: common})
@@ -325,9 +325,9 @@ describe Observed do
         subject.emit('kuroko3').now({foo:1, foo2:1, bar:2, bar2:2, baz: 3, baz2:3, r3: common}, {out: out, tag: 't', time: Time.now})
       end
       it 'allows a kind of reactive programming' do
-        require 'observed/job'
+        require 'observed/task'
 
-        subject.configure executor: Observed::BlockingJobExecutor.new
+        subject.configure executor: Observed::BlockingExecutor.new
 
         subject.report(via: 'test1', with: {out: out, common: common}).compose(
             subject.translate(via: 'test1').compose(

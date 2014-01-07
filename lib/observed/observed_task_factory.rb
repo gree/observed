@@ -1,7 +1,7 @@
 require 'observed/observer'
 require 'observed/reporter'
 require 'observed/translator'
-require 'observed/job'
+require 'observed/task'
 
 module Observed
   # An yet another cushion from the deprecated plugin interface to the new plugin interface
@@ -38,16 +38,16 @@ module Observed
     end
   end
 
-  class ExecutionJobFactory
+  class ObservedTaskFactory
 
     def initialize(args={})
-      @job_factory = args[:job_factory] || Observed::JobFactory.new(executor: Observed::BlockingJobExecutor.new)
+      @task_factory = args[:task_factory] || Observed::TaskFactory.new(executor: Observed::BlockingExecutor.new)
     end
 
-    # Convert the observer/translator/reporter to a job
-    def convert_to_job(underlying)
+    # Convert the observer/translator/reporter to a task
+    def convert_to_task(underlying)
       if underlying.is_a? Observed::Observer
-        @job_factory.job {|data, options|
+        @task_factory.task {|data, options|
           options ||= {}
           m = underlying.method(:observe)
           fake_system = FakeSystem.new(time: options[:time])
@@ -58,19 +58,19 @@ module Observed
           fake_system.reported || result
         }
       elsif underlying.is_a? Observed::Reporter
-        @job_factory.job {|data, options|
+        @task_factory.task {|data, options|
           options ||= {}
           m = underlying.method(:report)
           dispatch_method m, data, options
         }
       elsif underlying.is_a? Observed::Translator
-        @job_factory.job {|data, options|
+        @task_factory.task {|data, options|
           options ||= {}
           m = underlying.method(:translate)
           dispatch_method m, data, options
         }
       else
-        fail "Unexpected type of object which can not be converted to a job: #{underlying}"
+        fail "Unexpected type of object which can not be converted to a task: #{underlying}"
       end
     end
 

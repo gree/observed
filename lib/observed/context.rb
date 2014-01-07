@@ -3,7 +3,7 @@ require 'logger'
 require 'observed/system'
 require 'observed/config_builder'
 require 'observed/config_dsl'
-require 'observed/job'
+require 'observed/task'
 require 'observed/event_bus'
 
 module Observed
@@ -46,19 +46,19 @@ module Observed
     end
 
     def executor
-      @executor ||= Observed::BlockingJobExecutor.new
+      @executor ||= Observed::BlockingExecutor.new
     end
 
-    def jobbed_event_bus
-      @event_bus ||= Observed::EventBus.new(job_factory: job_factory)
+    def event_bus
+      @event_bus ||= Observed::EventBus.new(task_factory: task_factory)
     end
 
-    def job_factory
-      @job_factory ||= Observed::JobFactory.new(executor: executor)
+    def task_factory
+      @task_factory ||= Observed::TaskFactory.new(executor: executor)
     end
 
-    def execution_job_factory
-      @execution_job_factory ||= Observed::ExecutionJobFactory.new(job_factory: job_factory)
+    def observed_task_factory
+      @observed_task_factory ||= Observed::ObservedTaskFactory.new(task_factory: task_factory)
     end
 
     def config_builder

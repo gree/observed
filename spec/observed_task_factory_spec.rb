@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'observed/execution_job_factory'
+require 'observed/observed_task_factory'
 
-describe Observed::ExecutionJobFactory do
+describe Observed::ObservedTaskFactory do
   subject {
-    Observed::ExecutionJobFactory.new
+    Observed::ObservedTaskFactory.new
   }
-  it 'should convert observers, translators, reporters to jobs' do
+  it 'should convert observers, translators, reporters to tasks' do
     output = mock('output')
 
     the_observer = Class.new(Observed::Observer) do
@@ -24,12 +24,12 @@ describe Observed::ExecutionJobFactory do
         data.merge(c:3)
       end
     end.new
-    job = subject.convert_to_job(the_observer)
-      .then(subject.convert_to_job(the_translator))
-      .then(subject.convert_to_job(the_reporter))
+    task = subject.convert_to_task(the_observer)
+      .then(subject.convert_to_task(the_translator))
+      .then(subject.convert_to_task(the_reporter))
     tag = 'the_tag'
     time = Time.now
     output.expects(:write).with(tag: tag, time: time, data: {a:1,b:2,c:3})
-    job.now({a:1}, {tag: tag, time: time})
+    task.now({a:1}, {tag: tag, time: time})
   end
 end

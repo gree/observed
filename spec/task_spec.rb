@@ -1,46 +1,46 @@
 require 'spec_helper'
-require 'observed/job'
+require 'observed/task'
 
-describe Observed::MutableJob do
+describe Observed::MutableTask do
   let(:factory) {
-    Observed::JobFactory.new(:executor => Observed::BlockingJobExecutor.new)
+    Observed::TaskFactory.new(:executor => Observed::BlockingExecutor.new)
   }
 
   it 'yields the given block' do
     yielded = nil
-    job = factory.mutable_job { |data|
+    task = factory.mutable_task { |data|
       data
     }
-    job.now({a:1}, {b:2}) do |data, options|
+    task.now({a:1}, {b:2}) do |data, options|
       yielded = [data, options]
     end
     expect(yielded).to eq([{a:1}, {b:2}])
   end
 
-  it 'executes the job regardless of whether or not a block is given' do
+  it 'executes the task regardless of whether or not a block is given' do
     executed = nil
-    job = factory.mutable_job { |data, options|
+    task = factory.mutable_task { |data, options|
       executed = [data, options]
       data
     }
-    job.now({a:1}, {b:2})
+    task.now({a:1}, {b:2})
     expect(executed).to eq([{a:1}, {b:2}])
   end
 end
 
-describe Observed::ParallelJob do
+describe Observed::ParallelTask do
   let(:factory) {
-    Observed::JobFactory.new(:executor => Observed::BlockingJobExecutor.new)
+    Observed::TaskFactory.new(:executor => Observed::BlockingExecutor.new)
   }
 
   it 'yields the given block' do
-    job1 = factory.job { |data, |
+    task1 = factory.task { |data, |
       data.merge(c:3)
     }
-    job2 = factory.job { |data|
+    task2 = factory.task { |data|
       data.merge(d:4)
     }
-    par = Observed::ParallelJob.new([job1, job2])
+    par = Observed::ParallelTask.new([task1, task2])
     yielded = []
     par.now({a:1}, {b:2}) do |data, options|
       yielded.push([data, options])
@@ -48,37 +48,37 @@ describe Observed::ParallelJob do
     expect(yielded).to eq([[{a:1,c:3},{b:2}], [{a:1,d:4},{b:2}]])
   end
 
-  it 'executes the job regardless of whether or not a block is given' do
+  it 'executes the task regardless of whether or not a block is given' do
     executed = []
-    job1 = factory.job { |data, options|
+    task1 = factory.task { |data, options|
       r = data.merge(c:3)
       executed.push([r, options])
       r
     }
-    job2 = factory.job { |data, options|
+    task2 = factory.task { |data, options|
       r = data.merge(d:4)
       executed.push([r, options])
       r
     }
-    par = Observed::ParallelJob.new([job1, job2])
+    par = Observed::ParallelTask.new([task1, task2])
     par.now({a:1}, {b:2})
     expect(executed).to eq([[{a:1,c:3},{b:2}], [{a:1,d:4},{b:2}]])
   end
 end
 
-describe Observed::SequenceJob do
+describe Observed::SequenceTask do
   let(:factory) {
-    Observed::JobFactory.new(:executor => Observed::BlockingJobExecutor.new)
+    Observed::TaskFactory.new(:executor => Observed::BlockingExecutor.new)
   }
 
   it 'yields the given block' do
-    job1 = factory.job { |data|
+    task1 = factory.task { |data|
       data.merge(c:3)
     }
-    job2 = factory.job { |data|
+    task2 = factory.task { |data|
       data.merge(d:4)
     }
-    seq = Observed::SequenceJob.new(job1, job2)
+    seq = Observed::SequenceTask.new(task1, task2)
     yielded = []
     seq.now({a:1}, {b:2}) do |data, options|
       yielded.push([data, options])
@@ -86,82 +86,82 @@ describe Observed::SequenceJob do
     expect(yielded).to eq([[{a:1,c:3,d:4},{b:2}]])
   end
 
-  it 'executes the job regardless of whether or not a block is given' do
+  it 'executes the task regardless of whether or not a block is given' do
     executed = []
-    job1 = factory.job { |data, options|
+    task1 = factory.task { |data, options|
       r = data.merge(c:3)
       executed.push([r, options])
       r
     }
-    job2 = factory.job { |data, options|
+    task2 = factory.task { |data, options|
       r = data.merge(d:4)
       executed.push([r, options])
       r
     }
-    seq = Observed::SequenceJob.new(job1, job2)
+    seq = Observed::SequenceTask.new(task1, task2)
     seq.now({a:1}, {b:2})
     expect(executed).to eq([[{a:1,c:3},{b:2}], [{a:1,c:3,d:4},{b:2}]])
   end
 end
 
-describe Observed::Job do
+describe Observed::Task do
   context 'in simple use cases' do
     let(:factory) {
-      Observed::JobFactory.new(:executor => Observed::BlockingJobExecutor.new)
+      Observed::TaskFactory.new(:executor => Observed::BlockingExecutor.new)
     }
     context 'when the options as input are given' do
       it 'propagates the options from the input' do
-        job1 = factory.job { |data, options|
+        task1 = factory.task { |data, options|
           expect(options).to eq({b:2})
           data
         }
-        job2 = factory.job { |_, options|
+        task2 = factory.task { |_, options|
           expect(options).to eq({b:2})
         }
-        seq = job1.then(job2)
+        seq = task1.then(task2)
         seq.now({a:1}, {b:2})
       end
-      it 'allows to override the options from the input in subsequent jobs' do
-        job1 = factory.job { |data, options|
+      it 'allows to override the options from the input in subsequent tasks' do
+        task1 = factory.task { |data, options|
           expect(options).to eq({b:2})
           [data, {b:3}]
         }
-        job2 = factory.job { |_, options|
+        task2 = factory.task { |_, options|
           expect(options).to eq({b:3})
         }
-        seq = job1.then(job2)
+        seq = task1.then(task2)
         seq.now({a:1}, {b:2})
       end
     end
     context 'when the options as input are not given' do
-      it 'provides nil in the block parameter and allows to override it in subsequent jobs' do
-        job1 = factory.job { |data, options|
+      it 'provides nil in the block parameter and allows to override it in subsequent tasks' do
+        task1 = factory.task { |data, options|
           expect(options).to be_nil
           [data, {b:3}]
         }
-        job2 = factory.job { |_, options|
+        task2 = factory.task { |_, options|
           expect(options).to eq({b:3})
         }
-        seq = job1.then(job2)
+        seq = task1.then(task2)
         seq.now({a:1})
       end
     end
   end
   context 'when used in an immutable way' do
-    it 'propagates the resulting data to next jobs' do
-      factory = Observed::JobFactory.new(:executor => Observed::BlockingJobExecutor.new)
+    it 'propagates the resulting data to next tasks' do
+      factory = Observed::TaskFactory.new(:executor => Observed::BlockingExecutor.new)
       output = mock('output')
       input_data = { input: 1 }
-      a = factory.job { |data|
+      a = factory.task { |data|
         data.merge(a: 2)
       }
-      b = factory.job { |data, options|
+      b = factory.task { |data, options|
         data.merge(b: 3)
       }
-      c = factory.job { |data, options|
+      c = factory.task { |data, options|
         output.write data.merge(c: 4)
       }
-      d = factory.job { |data|
+      d = factory.task { |data|
         output.write data.merge(d: 5)
       }
       foo = a.then(b).then(c, d)
@@ -172,20 +172,20 @@ describe Observed::Job do
   end
 
   context 'when used in a mutable way' do
-    it 'propagates the resulting data to next jobs' do
-      factory = Observed::JobFactory.new(:executor => Observed::BlockingJobExecutor.new)
+    it 'propagates the resulting data to next tasks' do
+      factory = Observed::TaskFactory.new(:executor => Observed::BlockingExecutor.new)
       output = mock('output')
       input_data = { input: 1 }
-      a = factory.mutable_job { |data|
+      a = factory.mutable_task { |data|
         data.merge(a: 2)
       }
-      b = factory.job { |data, options|
+      b = factory.task { |data, options|
         data.merge(b: 3)
       }
-      c = factory.job { |data, options|
+      c = factory.task { |data, options|
         output.write data.merge(c: 4)
       }
-      d = factory.job { |data|
+      d = factory.task { |data|
         output.write data.merge(d: 5)
       }
       a.then(b).then(c, d)
@@ -199,22 +199,22 @@ describe Observed::Job do
     it 'notifies listeners with resulting data' do
 
       listener = mock('listener')
-      factory = Observed::JobFactory.new(
-          :executor => Observed::BlockingJobExecutor.new,
+      factory = Observed::TaskFactory.new(
+          :executor => Observed::BlockingExecutor.new,
           :listener => listener
       )
       output = mock('output')
       input_data = { input: 1 }
-      a = factory.job { |data|
+      a = factory.task { |data|
         data.merge(a: 2)
       }
-      b = factory.job { |data, options|
+      b = factory.task { |data, options|
         data.merge(b: 3)
       }
-      c = factory.job { |data, options|
+      c = factory.task { |data, options|
         output.write data.merge(c: 4)
       }
-      d = factory.job { |data|
+      d = factory.task { |data|
         output.write data.merge(d: 5)
       }
       foo = a.then(b).then(c, d)

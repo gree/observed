@@ -6,7 +6,7 @@ require 'observed/configurable'
 require 'observed/default'
 require 'observed/hash'
 require 'observed/translator'
-require 'observed/execution_job_factory'
+require 'observed/observed_task_factory'
 
 module Observed
 
@@ -110,7 +110,7 @@ module Observed
                  end
 
       reporters << reporter
-      report_it = convert_to_job(reporter)
+      report_it = convert_to_task(reporter)
       if tag_pattern
         receive(tag_pattern).then(report_it)
       end
@@ -167,7 +167,7 @@ module Observed
                  else
                    fail "No args valid args (in args=#{args}) or a block given"
                  end
-      observe_that = convert_to_job(observer)
+      observe_that = convert_to_task(observer)
       result = if tag
         a = observe_that.then(emit(tag))
         group tag, (group(tag) + [a])
@@ -192,19 +192,19 @@ module Observed
                    else
                      Observed::ProcTranslator.new &block
                  end
-      job = convert_to_job(translator)
-      job.name = "translate"
-      job
+      task = convert_to_task(translator)
+      task.name = "translate"
+      task
     end
 
     def emit(tag)
-      e = @context.jobbed_event_bus.emit(tag)
+      e = @context.event_bus.emit(tag)
       e.name = "emit to #{tag}"
       e
     end
 
     def receive(pattern)
-      @context.jobbed_event_bus.receive(pattern)
+      @context.event_bus.receive(pattern)
     end
 
     # Updates or get the observations belongs to the group named `name`
@@ -217,7 +217,7 @@ module Observed
     end
 
     def run_group(name)
-      @context.job_factory.parallel(group(name))
+      @context.task_factory.parallel(group(name))
     end
 
     def reporters
@@ -230,9 +230,9 @@ module Observed
 
     private
 
-    def convert_to_job(underlying)
-      @execution_job_factory ||= @context.execution_job_factory
-      @execution_job_factory.convert_to_job(underlying)
+    def convert_to_task(underlying)
+      @observed_task_factory ||= @context.observed_task_factory
+      @observed_task_factory.convert_to_task(underlying)
     end
   end
 

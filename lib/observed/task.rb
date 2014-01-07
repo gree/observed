@@ -2,89 +2,89 @@ require 'logger'
 require 'thread'
 
 module Observed
-  class Job
+  class Task
     attr_accessor :name
 
-    def then(*jobs)
-      next_job = if jobs.size == 1
-                   jobs.first
-                 elsif jobs.size > 1
-                   ParallelJob.new(jobs)
+    def then(*tasks)
+      next_task = if tasks.size == 1
+                   tasks.first
+                 elsif tasks.size > 1
+                   ParallelTask.new(tasks)
                  else
-                   raise 'No jobs to be executed'
+                   raise 'No tasks to be executed'
                  end
-      SequenceJob.new(self, next_job)
+      SequenceTask.new(self, next_task)
     end
 
-    def compose(first_job)
-      second_job = self
+    def compose(first_task)
+      second_task = self
 
-      first_job.then(second_job)
+      first_task.then(second_task)
     end
   end
 
-  class MutableJob
-    def initialize(current_job)
-      @current_job = current_job
+  class MutableTask
+    def initialize(current_task)
+      @current_task = current_task
       @mutex = Mutex.new
     end
     def now(data={}, options=nil)
-      @current_job.now(data, options) do |data, options2|
+      @current_task.now(data, options) do |data, options2|
         yield data, (options2 || options) if block_given?
       end
     end
-    def then(*jobs)
+    def then(*tasks)
       @mutex.synchronize do
-        @current_job = @current_job.then(*jobs)
+        @current_task = @current_task.then(*tasks)
       end
       self
     end
   end
 
-  class SequenceJob < Job
-    attr_reader :base_job
-    def initialize(base_job, next_job)
-      @base_job = base_job
-      @next_job = next_job
+  class SequenceTask < Observed::Task
+    attr_reader :base_task
+    def initialize(base_task, next_task)
+      @base_task = base_task
+      @next_task = next_task
     end
     def now(data={}, options=nil)
-      @base_job.now(data, options) do |data, options2|
-        @next_job.now(data, (options2 || options)) do |data, options3|
+      @base_task.now(data, options) do |data, options2|
+        @next_task.now(data, (options2 || options)) do |data, options3|
           yield data, (options3 || options2 || options) if block_given?
         end
       end
     end
   end
 
-  class ParallelJob < Job
-    def initialize(jobs)
-      @jobs = jobs || fail('jobs missing')
-      @next_job = NoOpJob.instance
+  class ParallelTask < Observed::Task
+    def initialize(tasks)
+      @tasks = tasks || fail('tasks missing')
+      @next_task = NoOpTask.instance
     end
     def now(data={}, options=nil)
-      @jobs.each do |job|
-        job.now(data, options) do |data, options2|
+      @tasks.each do |task|
+        task.now(data, options) do |data, options2|
           yield data, (options2 || options) if block_given?
         end
       end
     end
   end
 
-  class NoOpJob < Job
+  class NoOpTask < Observed::Task
     def now(data={}, options={}); end
     def self.instance
       SINGLETON_INSTANCE
     end
-    SINGLETON_INSTANCE = NoOpJob.new
+    SINGLETON_INSTANCE = NoOpTask.new
   end
 
-  class ProcJob < Job
+  class ProcTask < Observed::Task
     def initialize(args, &block)
       @executor = args[:executor] || fail('Missing a value for :executor')
       @listener = args[:listener] || fail('Missing a value for :listener')
       @logger = args[:logger]
       @block = block
-      @next_job = NoOpJob.instance
+      @next_task = NoOpTask.instance
 
       if @logger.nil?
         @logger = ::Logger.new(STDERR)
@@ -92,7 +92,7 @@ module Observed
       end
     end
     def now(data={}, options=nil)
-      @executor.execute {
+      @executor.submit {
         result = @block.call(data, options)
         yield result if block_given?
         notify_listener(data: data, options: options, result: result)
@@ -126,43 +126,43 @@ module Observed
     end
   end
 
-  class JobListener
+  class TaskListener
     def on_result(data={}, options={})
 
     end
   end
 
-  class JobFactory
+  class TaskFactory
     def initialize(args)
       @executor = args[:executor] || fail('Missing a value for :executor')
-      @listener = args[:listener] || JobListener.new
+      @listener = args[:listener] || TaskListener.new
     end
 
-    def job(&block)
-      ProcJob.new(executor: @executor, listener: @listener, &block)
+    def task(&block)
+      ProcTask.new(executor: @executor, listener: @listener, &block)
     end
 
-    def mutable_job(&block)
-      MutableJob.new(job(&block))
+    def mutable_task(&block)
+      MutableTask.new(task(&block))
     end
 
-    def parallel(jobs)
-      ParallelJob.new(jobs)
+    def parallel(tasks)
+      ParallelTask.new(tasks)
     end
   end
 
-  class JobExecutor
-    def execute; end
+  class Executor
+    def submit; end
   end
 
-  class BlockingJobExecutor
-    def execute
+  class BlockingExecutor
+    def submit
       yield
     end
   end
 
-  class ThreadedJobExecutor
-    def execute
+  class ThreadExecutor
+    def submit
       Thread.start {
         yield
       }

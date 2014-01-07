@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-require 'observed/job'
+require 'observed/task'
 require 'observed/event_bus'
 
 describe Observed::EventBus do
@@ -8,20 +8,20 @@ describe Observed::EventBus do
     mock('out')
   }
   let(:factory) {
-    executor = Observed::BlockingJobExecutor.new
-    Observed::JobFactory.new(executor: executor)
+    executor = Observed::BlockingExecutor.new
+    Observed::TaskFactory.new(executor: executor)
   }
-  let(:the_job) {
-    factory.job { |data, options|
+  let(:the_task) {
+    factory.task { |data, options|
       out.write data, options
     }
   }
   let(:bus) {
-    Observed::EventBus.new(job_factory: factory)
+    Observed::EventBus.new(task_factory: factory)
   }
-  it 'should invoke jobs when the corresponding events are emitted' do
+  it 'should invoke tasks when the corresponding events are emitted' do
     bus.emit('foo').now
-    bus.receive(/^bar$/).then(the_job)
+    bus.receive(/^bar$/).then(the_task)
     bus.emit('baz').now
     out.expects(:write).with({a:1}, {b:2})
     bus.emit('bar').now({a:1}, {b:2})
