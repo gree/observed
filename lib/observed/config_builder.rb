@@ -198,7 +198,7 @@ module Observed
     end
 
     def emit(tag)
-      e = @context.jobbed_event_bus.pipe_to_emit(tag)
+      e = @context.jobbed_event_bus.emit(tag)
       e.name = "emit to #{tag}"
       e
     end

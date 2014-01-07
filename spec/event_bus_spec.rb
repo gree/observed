@@ -27,12 +27,4 @@ describe Observed::EventBus do
     bus.emit('bar').now({a:1}, {b:2})
     bus.emit('blah').now
   end
-  it 'should return the job to emit events' do
-    bus.pipe_to_emit('foo').now
-    bus.receive(/^bar$/).then(the_job)
-    bus.pipe_to_emit('baz').now
-    out.expects(:write).with({a:1}, {b:2})
-    bus.pipe_to_emit('bar').now({a:1}, {b:2})
-    bus.pipe_to_emit('blah').now
-  end
 end

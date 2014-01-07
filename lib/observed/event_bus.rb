@@ -9,14 +9,11 @@ module Observed
       @job_factory = args[:job_factory] || fail("The parameter :job_factory is missing in args(#{args}")
       @mutex = ::Mutex.new
     end
-    def pipe_to_emit(tag)
+    def emit(tag, *params)
       @job_factory.job { |*params|
         @bus.emit tag, *params
         params
       }
-    end
-    def emit(tag, *params)
-      pipe_to_emit(tag)
     end
     def receive(pattern)
       job = @job_factory.mutable_job {|data, options|

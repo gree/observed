@@ -158,7 +158,7 @@ describe Observed do
         bus = Observed::EventBus.new(job_factory: job_factory)
 
         observe_then_send = (subject.observe via: 'test1')
-          .then(bus.pipe_to_emit 'foo1')
+          .then(bus.emit 'foo1')
 
         bus.receive(/foo1/)
           .then(subject.translate via: 'test1')
