@@ -61,6 +61,10 @@ Or `git clone` the sources and install by using rake:
 
     $ rake install
 
+Include the `--pre` option to try the latest RC:
+
+    $ gem install observed --pre
+
 ## Usage
 
 Simple example: _use Observed to observe and report the healthiness of Google_.
