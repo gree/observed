@@ -30,3 +30,7 @@ Feature: Be testable in a single Ruby source
     """
     foo {:foo=>1}
     """
+    Then the output should not contain:
+    """
+    Error
+    """

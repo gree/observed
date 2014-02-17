@@ -1,7 +1,5 @@
 require 'observed/version'
-require 'observed/config_builder'
-require 'observed/system'
-require 'observed/config_dsl'
+require 'observed/context'
 require 'observed/builtin_plugins'
 require 'forwardable'
 
@@ -28,24 +26,24 @@ module Observed
   class Singleton
     extend Forwardable
 
-    def_delegators :@observed, :require_relative, :observe, :report, :write, :read, :config, :load!, :working_directory
+    def_delegators :@observed, :require_relative, :observe, :translate, :report, :write, :read, :emit, :receive, :group, :run_group, :config, :load!, :working_directory
 
     # Call this method before you are going to build 2nd or later Observed configuration using this module.
     # Refrain that `Observed` object is a builder for Observed configuration and it has global state.
     # We have to reset its state via this `init!` method before building next configurations after the first one.
     def init!
-      @sys = Observed::System.new
-      config_builder = Observed::ConfigBuilder.new(system: @sys)
-      @observed = Observed::ConfigDSL.new(builder: config_builder)
+      @context = Observed::Context.new
+      @observed = @context.config_dsl
     end
 
-    def run(tag=nil)
-      @sys.config = self.config
-      @sys.run(tag)
+    def run(tag=nil, data=nil, options=nil)
+      sys = @context.system
+      sys.config = @observed.config
+      sys.send :run, *[tag, data, options].take_while { |a| a != nil }
     end
 
     def configure(*args)
-      @observed.send :configure, *args
+      @context.configure *args
     end
   end
 
@@ -69,7 +67,7 @@ module Observed
 
   extend Forwardable
 
-  def_delegators :@@singleton, :run, :init!, :configure, :require_relative, :observe, :report, :write, :read, :config,
+  def_delegators :@@singleton, :run, :init!, :configure, :require_relative, :observe, :translate, :report, :write, :read, :emit, :receive, :group, :run_group, :config,
                  :load!, :working_directory
 
   extend self

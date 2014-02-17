@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Perform necessary observed removal steps
+# after package is uninstalled.
+#
+
+echo "observed has been uninstalled!"
+
+exit 0

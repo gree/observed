@@ -3,10 +3,7 @@ require 'optparse'
 require 'pathname'
 
 require 'observed/config'
-require 'observed/config_builder'
-require 'observed/config_dsl'
-require 'observed/observer'
-require 'observed/system'
+require 'observed/context'
 
 module Observed
 
@@ -28,17 +25,12 @@ module Observed
       end
 
       def run(observation_name=nil)
-        system.run(observation_name)
-      end
-
-      def logger
-        @logger ||= Logger.new(STDOUT)
+        @system.run(observation_name)
       end
 
       class << self
-        def from_argv(argv)
-
-          command_line_args = argv.dup
+        def parse_argv!(argv)
+          command_line_args = argv
 
           args = {}
 
@@ -55,38 +47,29 @@ module Observed
 
           opts.parse!(command_line_args)
 
-          if command_line_args.size != 1
+          unless command_line_args.size == 1 || command_line_args.size == 2
             fail InvalidArgumentError, "Invalid number of arguments #{command_line_args.size} where arguments are #{command_line_args}"
           end
 
-          args[:config_file] = command_line_args.first
+          args[:config_file] = command_line_args.shift
 
+          args
+        end
+
+        def from_argv(argv)
+          args = parse_argv!(argv.dup)
           create(args)
         end
 
         # @param [Hash<Symbol,String>] args
         # @option args [Array<String>] :argv The Ruby's `ARGV` like object which is treated as intialization parameters for Oneshoft application.
         def create(args)
-          logger_out = if args[:log_file]
-                         File.open(args[:log_file], 'a')
-                       else
-                         STDOUT
-                       end
-          logger = Logger.new(logger_out)
-          logger.level = if args[:debug]
-                           Logger::DEBUG
-                         else
-                           Logger::INFO
-                         end
-          sys = Observed::System.new(logger: logger)
+          ctx = Observed::Context.new(args)
+          sys = ctx.system
           config = if args[:yaml_file]
                      YAML.load_file(args[:yaml_file])
                    elsif args[:config_file]
-                     path = args[:config_file]
-                     config_builder = Observed::ConfigBuilder.new(system: sys, logger: logger)
-                     config_dsl = Observed::ConfigDSL.new(builder: config_builder, logger: logger)
-                     config_dsl.eval_file(path)
-                     config_dsl.config
+                     sys.config
                    elsif args[:config]
                      c = args[:config]
                      c
@@ -101,12 +84,6 @@ module Observed
           sys.config = config
           new(config, sys)
         end
-      end
-
-      private
-
-      def system
-        @system
       end
 
     end

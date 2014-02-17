@@ -4,7 +4,9 @@ require 'observed'
 require 'observed/application/oneshot'
 
 begin
-  Observed::Application::Oneshot.from_argv(ARGV).run
+  argv = ARGV.dup
+  args = Observed::Application::Oneshot.parse_argv!(argv)
+  Observed::Application::Oneshot.create(args).run *argv
 rescue Observed::Application::Oneshot::InvalidArgumentError => e
   $stderr.puts 'Missing the path to a Observed config file'
   $stderr.puts 'Usage: observed-oneshot [-d|--debug] [-l LOG_FILE|--log_file LOG_FILE] <observed.rb>'

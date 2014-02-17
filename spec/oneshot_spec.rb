@@ -52,7 +52,12 @@ describe Observed::Application::Oneshot do
       end
     end
   end
-  context 'with configuration directories' do
-
+  describe '#parse_argv!' do
+    it 'parses ARGV like arrays and extracts Hash objects containing initialization parameters' do
+      argv = %w| -l logfile -d observed.rb foo1 |
+      params = Observed::Application::Oneshot.parse_argv! argv
+      expect(params).to eq({log_file: Pathname.new('logfile'), debug: true, config_file: 'observed.rb'})
+      expect(argv).to eq(%w| foo1 |)
+    end
   end
 end

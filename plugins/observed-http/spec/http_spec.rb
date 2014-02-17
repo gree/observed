@@ -46,7 +46,7 @@ describe Observed::Plugins::HTTP do
     before {
       Timeout.expects(:timeout).raises(Timeout::Error)
 
-      sys.expects(:report).with('test.error', {status: :error, error: {message: ''}, timed_out: true})
+      sys.expects(:report).with('test.error', {status: :error, error: {message: 'Timed out.'}, timed_out: true})
     }
 
     it 'reports an error' do

@@ -26,12 +26,11 @@ Feature: Running Observed inside Clockwork
         def observe
           sleep_duration = rand / 20
           sleep sleep_duration
-          system.report(tag, "Foo #{sleep_duration}")
-
-          # For testing purpose,
-          # we want the `clockwork` process to exit as soon as we ran Observed to report the test
-          # output to the stdout
-          exit
+          ::Thread.start {
+            sleep 1
+            exit
+          }
+          system.report(tag, {text: "Foo #{sleep_duration}"})
         end
 
         def logger
@@ -55,5 +54,5 @@ Feature: Running Observed inside Clockwork
     When I run `clockwork clockwork.rb`
     Then the output should contain:
     """
-    foo_1 Foo
+    00 foo_1 {:text=>"Foo
     """

@@ -7,10 +7,6 @@ module Observed
 
     include Observed::Configurable
 
-    # !@attribute [rw] writers
-    #  @return [Array<Observed::Writer>]
-    attribute :writers
-
     # !@attribute [rw] readers
     #  @return [Array<Observed::Reader>]
     attribute :readers
@@ -22,6 +18,10 @@ module Observed
     # !@attribute [rw] observers
     #  @return [Array<Observed::Observer>]
     attribute :observers
+
+    # !@attribuet [rw] translators
+    #  @return [Array<Observed::Translator]
+    attribute :translators
 
   end
 end

@@ -22,3 +22,7 @@ Feature: Be testable in a single command
     """
     foo {:foo=>1}
     """
+    Then the output should not contain:
+    """
+    Error
+    """

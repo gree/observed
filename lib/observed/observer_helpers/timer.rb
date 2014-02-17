@@ -18,10 +18,10 @@ module Observed
           r[:elapsed_time] = elapsed_time
           r
         rescue Timeout::Error => e
-          logger.debug "Handled the error but logging it just for your info: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
+          log_debug "Handled the error but logging it just for your info: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
           { status: :error, error: {message: 'Timed out.'}, timed_out: true }
         rescue => e
-          logger.error "Handled the error: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
+          log_error "Handled the error: #{e.message}\n#{e.backtrace.join("\n")}" if self.is_a? Logging
           { status: :error, error: {message: e.message} }
         end
       end
@@ -31,7 +31,13 @@ module Observed
         format = options[:format] || ->(r){ r }
         result = time(options, &block)
 
-        system.report("#{tag}.#{result[:status]}", format.call(result))
+        data = ["#{tag}.#{result[:status]}", format.call(result)]
+
+        if self.method(:observe).parameters.size != 1
+          system.report(*data)
+        end
+
+        data
       end
 
     end

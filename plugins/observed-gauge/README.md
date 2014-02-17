@@ -16,6 +16,11 @@ Or install it yourself as:
 
     $ gem install observed-gauge
 
+You might also need to install rrdtool:
+
+    (CentOS or Ubuntu)
+    $ sudo apt-get install librrd-dev
+
 ## Usage
 
 TODO: Write usage instructions here
