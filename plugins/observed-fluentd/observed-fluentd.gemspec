@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = %w(lib)
 
+  spec.add_dependency "observed", "~> 0.2"
   spec.add_dependency 'fluent-logger', '~> 0.4.6'
 
   spec.add_development_dependency 'bundler', '~> 1.3'
